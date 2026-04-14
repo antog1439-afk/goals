@@ -11,13 +11,52 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: background 0.3s ease;
             position: relative;
             padding: 20px;
         }
         
-        /* Анимированные фоновые круги */
-        body::before {
+        /* Градиентные темы */
+        body.theme-default {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        body.theme-ocean {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+        }
+        
+        body.theme-sunset {
+            background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
+        }
+        
+        body.theme-forest {
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+        }
+        
+        body.theme-berry {
+            background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);
+        }
+        
+        body.theme-custom {
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        body.theme-custom::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Анимированные частицы только для градиентных тем */
+        body:not(.theme-custom)::before {
             content: '';
             position: fixed;
             top: 0;
@@ -25,31 +64,29 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.15) 0%, transparent 50%);
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }
         
-        /* Анимированные частицы */
-        body::after {
+        body:not(.theme-custom)::after {
             content: '';
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: radial-gradient(#ffffff 1px, transparent 1px);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px);
             background-size: 50px 50px;
-            opacity: 0.1;
+            opacity: 0.3;
             pointer-events: none;
             animation: float 20s linear infinite;
         }
         
         @keyframes float {
             0% { transform: translateY(0px) translateX(0px); }
-            100% { transform: translateY(-100px) translateX(-100px); }
+            100% { transform: translateY(-50px) translateX(-50px); }
         }
         
         .container {
@@ -59,7 +96,110 @@
             z-index: 1;
         }
         
-        /* Стеклянный эффект для карточек */
+        /* Кнопка настроек фона */
+        .theme-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Панель выбора темы */
+        .theme-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 15px;
+            width: 250px;
+            z-index: 100;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.3s ease;
+            transform-origin: bottom right;
+        }
+        
+        .theme-panel.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .theme-panel h4 {
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .theme-option {
+            width: 100%;
+            height: 50px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .theme-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .theme-option.selected {
+            border-color: white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+        
+        .custom-theme-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .reset-theme-btn {
+            width: 100%;
+            padding: 8px;
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        
+        /* Остальные стили */
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -68,15 +208,10 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-        
         .header {
             text-align: center;
             margin-bottom: 30px;
-            padding: 20px;
+            padding: 25px;
         }
         
         .header h1 {
@@ -86,12 +221,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .header p {
-            color: #666;
-            font-size: 14px;
         }
         
         .tabs {
@@ -113,22 +242,11 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .tab.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .form-group { margin-bottom: 20px; }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
         }
         
         input, textarea, select {
@@ -146,7 +264,6 @@
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         button {
@@ -160,16 +277,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        button:active {
-            transform: translateY(0);
         }
         
         .event-item, .note-item, .history-item {
@@ -179,15 +286,13 @@
             margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .event-item:hover, .note-item:hover, .history-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
         
-        .note-header, .event-header, .history-header {
+        .event-header, .note-header, .history-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -210,16 +315,10 @@
             padding: 6px 12px;
             width: auto;
             font-size: 12px;
-            box-shadow: none;
         }
         
-        .edit-btn { 
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-        }
-        
-        .delete-event-btn, .delete-note-btn { 
-            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-        }
+        .edit-btn { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
+        .delete-event-btn, .delete-note-btn { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); }
         
         .event-datetime, .history-datetime {
             font-size: 14px;
@@ -240,10 +339,6 @@
             background-clip: text;
         }
         
-        .history-status.past { color: #718096; }
-        .history-status.today { color: #ed8936; }
-        .history-status.future { color: #48bb78; }
-        
         .reminder-badge {
             display: inline-block;
             background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
@@ -254,25 +349,11 @@
             margin-left: 8px;
         }
         
-        .note-content {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-        
-        .note-date {
-            font-size: 12px;
-            color: #a0aec0;
-        }
-        
         .empty-state {
             text-align: center;
             padding: 50px 20px;
-            color: #718096;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
-            backdrop-filter: blur(10px);
         }
         
         .modal {
@@ -287,7 +368,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            z-index: 1000;
+            z-index: 200;
         }
         
         .modal-content {
@@ -298,13 +379,6 @@
             width: 100%;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-        
-        .modal-content h3 { 
-            margin-bottom: 20px;
-            color: #2d3748;
-            font-size: 24px;
         }
         
         .success-msg {
@@ -320,14 +394,8 @@
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
-            z-index: 1001;
+            z-index: 201;
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .close-modal-btn {
-            background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
-            margin-top: 10px;
         }
         
         .reminder-options {
@@ -335,13 +403,6 @@
             padding: 15px;
             border-radius: 16px;
             margin-top: 10px;
-        }
-        
-        .reminder-title {
-            font-weight: bold;
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #4a5568;
         }
         
         .reminder-checkboxes {
@@ -356,13 +417,6 @@
             gap: 6px;
             font-size: 12px;
             cursor: pointer;
-            font-weight: normal;
-            color: #4a5568;
-        }
-        
-        .reminder-checkboxes input {
-            width: auto;
-            margin: 0;
         }
         
         .filter-buttons {
@@ -378,7 +432,6 @@
             font-size: 14px;
             background: rgba(255, 255, 255, 0.9);
             color: #4a5568;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .filter-btn.active {
@@ -392,52 +445,23 @@
             border-radius: 16px;
             margin-bottom: 20px;
             text-align: center;
-            font-weight: 500;
-            color: #4a5568;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stats span {
-            font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 18px;
-        }
-        
-        hr {
-            margin: 15px 0;
-            border-color: #e2e8f0;
         }
         
         .back-btn {
             background: rgba(255, 255, 255, 0.9);
             color: #4a5568;
             margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
-        /* Анимация появления */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .event-item, .note-item, .history-item {
-            animation: fadeInUp 0.4s ease-out;
+        /* Скрытый input для загрузки фото */
+        #imageUpload {
+            display: none;
         }
     </style>
 </head>
-<body>
+<body class="theme-default">
     <div class="container">
-        <div class="header glass-card" style="padding: 25px;">
+        <div class="header glass-card">
             <h1>🎯 Мой Планировщик</h1>
             <p>Управляй событиями, ставь цели и никогда ничего не забывай</p>
         </div>
@@ -471,7 +495,27 @@
         </div>
     </div>
     
-    <!-- Модальное окно для добавления/редактирования события -->
+    <!-- Кнопка выбора фона -->
+    <button class="theme-btn" onclick="toggleThemePanel()">🎨</button>
+    
+    <!-- Панель выбора темы -->
+    <div class="theme-panel" id="themePanel">
+        <h4>🎨 Выбери фон</h4>
+        <div class="theme-grid">
+            <div class="theme-option" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="setTheme('default')"></div>
+            <div class="theme-option" style="background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);" onclick="setTheme('ocean')"></div>
+            <div class="theme-option" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);" onclick="setTheme('sunset')"></div>
+            <div class="theme-option" style="background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);" onclick="setTheme('forest')"></div>
+            <div class="theme-option" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);" onclick="setTheme('berry')"></div>
+            <div class="theme-option" style="background: linear-gradient(135deg, #1f1c2c 0%, #302b63 100%);" onclick="setTheme('night')"></div>
+        </div>
+        <button class="custom-theme-btn" onclick="uploadCustomBackground()">📸 Своё фото</button>
+        <button class="reset-theme-btn" onclick="resetToDefault()">🔄 Сбросить</button>
+    </div>
+    
+    <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
+    
+    <!-- Модальные окна -->
     <div id="eventModal" class="modal">
         <div class="modal-content">
             <h3 id="eventModalTitle">➕ Новое событие</h3>
@@ -483,7 +527,6 @@
                 <label>Дата и время</label>
                 <input type="datetime-local" id="eventDatetime">
             </div>
-            
             <div class="reminder-options">
                 <div class="reminder-title">⏰ Напоминания</div>
                 <div class="reminder-checkboxes">
@@ -496,14 +539,12 @@
                     <label><input type="checkbox" value="1" class="reminder-check"> за 1 день</label>
                 </div>
             </div>
-            
             <input type="hidden" id="editEventId">
             <button onclick="saveEvent()">Сохранить</button>
-            <button onclick="closeModal('eventModal')" class="close-modal-btn">Отмена</button>
+            <button onclick="closeModal('eventModal')" class="close-modal-btn" style="margin-top: 10px; background: #a0aec0;">Отмена</button>
         </div>
     </div>
     
-    <!-- Модальное окно для добавления/редактирования заметки -->
     <div id="noteModal" class="modal">
         <div class="modal-content">
             <h3 id="noteModalTitle">📝 Новая заметка</h3>
@@ -517,7 +558,7 @@
             </div>
             <input type="hidden" id="editNoteId">
             <button onclick="saveNote()">Сохранить</button>
-            <button onclick="closeModal('noteModal')" class="close-modal-btn">Отмена</button>
+            <button onclick="closeModal('noteModal')" class="close-modal-btn" style="margin-top: 10px; background: #a0aec0;">Отмена</button>
         </div>
     </div>
     
@@ -528,18 +569,104 @@
         tg.expand();
         tg.MainButton.hide();
         
-        // Настройка темы Telegram
-        if (tg.colorScheme === 'dark') {
-            document.body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
-        }
-        
         let userId = tg.initDataUnsafe?.user?.id || 'anonymous';
         let currentHistoryFilter = 'all';
         
         const EVENTS_KEY = `events_${userId}`;
         const NOTES_KEY = `notes_${userId}`;
         const REMINDERS_KEY = `reminders_${userId}`;
+        const THEME_KEY = `theme_${userId}`;
+        const CUSTOM_BG_KEY = `custom_bg_${userId}`;
         
+        // --- Функции для работы с фоном ---
+        function toggleThemePanel() {
+            const panel = document.getElementById('themePanel');
+            panel.classList.toggle('show');
+        }
+        
+        function setTheme(themeName) {
+            const body = document.body;
+            // Убираем все классы тем
+            body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest', 'theme-berry', 'theme-night', 'theme-custom');
+            body.classList.add(`theme-${themeName}`);
+            
+            // Сохраняем в localStorage
+            localStorage.setItem(THEME_KEY, themeName);
+            
+            // Показываем сообщение
+            showMessage('🎨 Тема изменена!');
+            
+            // Закрываем панель
+            setTimeout(() => {
+                document.getElementById('themePanel').classList.remove('show');
+            }, 500);
+        }
+        
+        function uploadCustomBackground() {
+            document.getElementById('imageUpload').click();
+        }
+        
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    const body = document.body;
+                    
+                    // Убираем все классы тем
+                    body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest', 'theme-berry', 'theme-night');
+                    body.classList.add('theme-custom');
+                    
+                    // Устанавливаем фон
+                    body.style.backgroundImage = `url(${imageUrl})`;
+                    body.style.backgroundSize = 'cover';
+                    body.style.backgroundPosition = 'center';
+                    body.style.backgroundAttachment = 'fixed';
+                    
+                    // Сохраняем в localStorage
+                    localStorage.setItem(THEME_KEY, 'custom');
+                    localStorage.setItem(CUSTOM_BG_KEY, imageUrl);
+                    
+                    showMessage('📸 Фото установлено как фон!');
+                    document.getElementById('themePanel').classList.remove('show');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function resetToDefault() {
+            const body = document.body;
+            body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest', 'theme-berry', 'theme-night', 'theme-custom');
+            body.classList.add('theme-default');
+            body.style.backgroundImage = '';
+            
+            localStorage.setItem(THEME_KEY, 'default');
+            localStorage.removeItem(CUSTOM_BG_KEY);
+            
+            showMessage('🔄 Фон сброшен к стандартному');
+            document.getElementById('themePanel').classList.remove('show');
+        }
+        
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            const savedCustomBg = localStorage.getItem(CUSTOM_BG_KEY);
+            
+            if (savedTheme === 'custom' && savedCustomBg) {
+                const body = document.body;
+                body.classList.add('theme-custom');
+                body.style.backgroundImage = `url(${savedCustomBg})`;
+                body.style.backgroundSize = 'cover';
+                body.style.backgroundPosition = 'center';
+                body.style.backgroundAttachment = 'fixed';
+            } else if (savedTheme && savedTheme !== 'custom') {
+                setTheme(savedTheme);
+            } else {
+                setTheme('default');
+            }
+        }
+        
+        // --- Остальные функции бота ---
         function showMessage(text, isError = false) {
             const msg = document.getElementById('successMsg');
             msg.textContent = text;
@@ -572,31 +699,24 @@
         function checkAndSendReminders() {
             Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY, REMINDERS_KEY], (err, items) => {
                 if (err) return;
-                
                 let events = [];
                 if (items[EVENTS_KEY]) {
                     try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {}
                 }
-                
                 let sentReminders = [];
                 if (items[REMINDERS_KEY]) {
                     try { sentReminders = JSON.parse(items[REMINDERS_KEY]); } catch(e) {}
                 }
-                
                 const now = new Date();
-                
                 events.forEach(event => {
                     const eventDateTime = new Date(event.datetime);
                     const daysLeft = Math.ceil((eventDateTime - now) / (1000 * 60 * 60 * 24));
-                    
                     if (event.reminders && event.reminders.length > 0) {
                         event.reminders.forEach(days => {
                             const reminderKey = `${event.id}_${days}`;
                             const shouldRemind = daysLeft === parseInt(days);
-                            
                             if (shouldRemind && !sentReminders.includes(reminderKey)) {
                                 sentReminders.push(reminderKey);
-                                
                                 tg.showPopup({
                                     title: '🔔 Напоминание',
                                     message: `Событие "${event.name}" через ${days} дней!\nДата: ${event.datetime.replace('T', ' в ')}`,
@@ -606,7 +726,6 @@
                         });
                     }
                 });
-                
                 Telegram.WebApp.CloudStorage.setItem(REMINDERS_KEY, JSON.stringify(sentReminders));
             });
         }
@@ -614,45 +733,36 @@
         function loadEvents() {
             Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
                 if (err) { console.error(err); return; }
-                
                 let events = [];
                 if (items[EVENTS_KEY]) {
                     try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
                 }
-                
                 const container = document.getElementById('eventsList');
                 const now = new Date();
-                
                 if (events.length === 0) {
                     container.innerHTML = '<div class="empty-state">📭 Нет событий. Добавьте первое!</div>';
                     return;
                 }
-                
                 const activeEvents = events.filter(event => {
                     const eventDateTime = new Date(event.datetime);
                     return eventDateTime >= new Date(now.setHours(0, 0, 0, 0));
                 }).sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
-                
                 if (activeEvents.length === 0) {
                     container.innerHTML = '<div class="empty-state">✨ Нет предстоящих событий. Отдыхайте!<br><br>📜 Посмотрите <b>Историю</b> для прошедших событий.</div>';
                     return;
                 }
-                
                 container.innerHTML = activeEvents.map(event => {
                     const eventDateTime = new Date(event.datetime);
                     const daysLeft = Math.ceil((eventDateTime - now) / (1000 * 60 * 60 * 24));
                     const hoursLeft = Math.floor((eventDateTime - now) / (1000 * 60 * 60));
-                    
                     let status = '';
                     if (daysLeft > 1) status = `⏳ ${daysLeft} дней осталось`;
                     else if (daysLeft === 1) status = `⏳ ${hoursLeft} часов осталось`;
                     else if (daysLeft === 0 && eventDateTime > now) status = `⏰ Сегодня в ${event.datetime.slice(11, 16)}`;
                     else if (daysLeft === 0 && eventDateTime <= now) status = '🎉 СЕГОДНЯ! 🎉';
-                    
                     const formattedDatetime = event.datetime.replace('T', ' в ');
                     const reminderCount = event.reminders ? event.reminders.length : 0;
                     const reminderBadge = reminderCount > 0 ? `<span class="reminder-badge">🔔 ${reminderCount}</span>` : '';
-                    
                     return `
                         <div class="event-item">
                             <div class="event-header">
@@ -667,7 +777,6 @@
                         </div>
                     `;
                 }).join('');
-                
                 checkAndSendReminders();
             });
         }
@@ -675,15 +784,12 @@
         function loadHistory() {
             Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
                 if (err) { console.error(err); return; }
-                
                 let events = [];
                 if (items[EVENTS_KEY]) {
                     try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
                 }
-                
                 const now = new Date();
                 const today = new Date(now.setHours(0, 0, 0, 0));
-                
                 let filteredEvents = events;
                 if (currentHistoryFilter === 'past') {
                     filteredEvents = events.filter(e => new Date(e.datetime) < today);
@@ -695,39 +801,32 @@
                 } else if (currentHistoryFilter === 'future') {
                     filteredEvents = events.filter(e => new Date(e.datetime) >= today);
                 }
-                
                 const pastCount = events.filter(e => new Date(e.datetime) < today).length;
                 const todayCount = events.filter(e => {
                     const eDate = new Date(e.datetime);
                     return eDate.toDateString() === today.toDateString();
                 }).length;
                 const futureCount = events.filter(e => new Date(e.datetime) >= today).length;
-                
                 document.getElementById('historyStats').innerHTML = `
                     📊 Всего: <span>${events.length}</span> | 
                     ✅ Прошло: <span>${pastCount}</span> | 
                     🎉 Сегодня: <span>${todayCount}</span> | 
                     ⏳ Осталось: <span>${futureCount}</span>
                 `;
-                
                 const container = document.getElementById('historyList');
-                
                 if (filteredEvents.length === 0) {
                     container.innerHTML = '<div class="empty-state">📭 Нет событий в этом разделе</div>';
                     return;
                 }
-                
                 if (currentHistoryFilter === 'past') {
                     filteredEvents.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
                 } else {
                     filteredEvents.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
                 }
-                
                 container.innerHTML = filteredEvents.map(event => {
                     const eventDateTime = new Date(event.datetime);
                     const daysDiff = Math.ceil((eventDateTime - today) / (1000 * 60 * 60 * 24));
                     const formattedDatetime = event.datetime.replace('T', ' в ');
-                    
                     let status = '';
                     let statusClass = '';
                     if (daysDiff < 0) {
@@ -740,10 +839,8 @@
                         status = `⏳ Через ${daysDiff} дней`;
                         statusClass = 'future';
                     }
-                    
                     const reminderCount = event.reminders ? event.reminders.length : 0;
                     const reminderBadge = reminderCount > 0 ? `<span class="reminder-badge">🔔 ${reminderCount}</span>` : '';
-                    
                     return `
                         <div class="history-item">
                             <div class="history-header">
@@ -761,21 +858,17 @@
             const name = document.getElementById('eventName').value;
             const datetime = document.getElementById('eventDatetime').value;
             const editId = document.getElementById('editEventId').value;
-            
             const reminderChecks = document.querySelectorAll('.reminder-check:checked');
             const reminders = Array.from(reminderChecks).map(cb => parseInt(cb.value));
-            
             if (!name || !datetime) {
                 tg.showAlert('Заполните все поля!');
                 return;
             }
-            
             Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
                 let events = [];
                 if (items[EVENTS_KEY]) {
                     try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
                 }
-                
                 if (editId) {
                     const index = events.findIndex(e => e.id == editId);
                     if (index !== -1) {
@@ -794,7 +887,6 @@
                     });
                     showMessage('✅ Событие добавлено!');
                 }
-                
                 Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
                     if (saved) {
                         closeModal('eventModal');
@@ -817,18 +909,15 @@
                 if (items[EVENTS_KEY]) {
                     try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
                 }
-                
                 const event = events.find(e => e.id == eventId);
                 if (event) {
                     document.getElementById('eventModalTitle').textContent = '✏️ Редактировать событие';
                     document.getElementById('eventName').value = event.name;
                     document.getElementById('eventDatetime').value = event.datetime;
                     document.getElementById('editEventId').value = event.id;
-                    
                     document.querySelectorAll('.reminder-check').forEach(cb => {
                         cb.checked = event.reminders && event.reminders.includes(parseInt(cb.value));
                     });
-                    
                     document.getElementById('eventModal').style.display = 'flex';
                 }
             });
@@ -842,9 +931,7 @@
                         if (items[EVENTS_KEY]) {
                             try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
                         }
-                        
                         events = events.filter(e => e.id != eventId);
-                        
                         Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
                             if (saved) {
                                 showMessage('🗑 Событие удалено');
@@ -860,21 +947,16 @@
         function loadNotes() {
             Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
                 if (err) { console.error(err); return; }
-                
                 let notes = [];
                 if (items[NOTES_KEY]) {
                     try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                 }
-                
                 const container = document.getElementById('notesList');
-                
                 if (notes.length === 0) {
                     container.innerHTML = '<div class="empty-state">📭 Нет заметок. Добавьте первую!</div>';
                     return;
                 }
-                
                 notes.reverse();
-                
                 container.innerHTML = notes.map(note => `
                     <div class="note-item">
                         <div class="note-header">
@@ -895,18 +977,15 @@
             const title = document.getElementById('noteTitle').value;
             const content = document.getElementById('noteContent').value;
             const editId = document.getElementById('editNoteId').value;
-            
             if (!title || !content) {
                 tg.showAlert('Заполните все поля!');
                 return;
             }
-            
             Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
                 let notes = [];
                 if (items[NOTES_KEY]) {
                     try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                 }
-                
                 if (editId) {
                     const index = notes.findIndex(n => n.id == editId);
                     if (index !== -1) {
@@ -924,7 +1003,6 @@
                     });
                     showMessage('✅ Заметка добавлена!');
                 }
-                
                 Telegram.WebApp.CloudStorage.setItem(NOTES_KEY, JSON.stringify(notes), (err, saved) => {
                     if (saved) {
                         closeModal('noteModal');
@@ -945,7 +1023,6 @@
                 if (items[NOTES_KEY]) {
                     try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                 }
-                
                 const note = notes.find(n => n.id == noteId);
                 if (note) {
                     document.getElementById('noteModalTitle').textContent = '✏️ Редактировать заметку';
@@ -965,9 +1042,7 @@
                         if (items[NOTES_KEY]) {
                             try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                         }
-                        
                         notes = notes.filter(n => n.id != noteId);
-                        
                         Telegram.WebApp.CloudStorage.setItem(NOTES_KEY, JSON.stringify(notes), (err, saved) => {
                             if (saved) {
                                 showMessage('🗑 Заметка удалена');
@@ -983,7 +1058,6 @@
             document.getElementById('eventsTab').style.display = tab === 'events' ? 'block' : 'none';
             document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
             document.getElementById('notesTab').style.display = tab === 'notes' ? 'block' : 'none';
-            
             document.querySelectorAll('.tab').forEach((btn, i) => {
                 const btnText = btn.textContent.trim();
                 btn.classList.toggle('active', 
@@ -992,7 +1066,6 @@
                     (tab === 'notes' && btnText.includes('Заметки'))
                 );
             });
-            
             if (tab === 'events') loadEvents();
             else if (tab === 'history') loadHistory();
             else if (tab === 'notes') loadNotes();
@@ -1032,8 +1105,13 @@
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
             }
+            if (!event.target.closest('.theme-panel') && !event.target.closest('.theme-btn')) {
+                document.getElementById('themePanel').classList.remove('show');
+            }
         }
         
+        // Загрузка сохранённой темы и запуск
+        loadSavedTheme();
         setInterval(checkAndSendReminders, 30000);
         loadEvents();
     </script>
