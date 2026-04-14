@@ -46,7 +46,9 @@
             background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
             font-size: 16px;
+            font-family: inherit;
         }
+        textarea { resize: vertical; }
         button {
             width: 100%;
             padding: 14px;
@@ -63,19 +65,58 @@
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 10px;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .note-title {
+            font-weight: bold;
+            font-size: 16px;
+            flex: 1;
+        }
+        .note-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .edit-btn, .delete-note-btn {
+            padding: 6px 12px;
+            width: auto;
+            font-size: 12px;
+        }
+        .edit-btn { background: var(--tg-theme-button-color, #3390ec); }
+        .delete-note-btn { background: #ff3b30; }
+        .event-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .event-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .event-info, .note-info { flex: 1; }
-        .event-name, .note-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
-        .event-date, .note-content { font-size: 14px; color: var(--tg-theme-hint-color, #666666); margin-bottom: 5px; }
+        .event-info { flex: 1; }
+        .event-name { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+        .event-date { font-size: 14px; color: var(--tg-theme-hint-color, #666666); margin-bottom: 5px; }
         .event-days { font-size: 14px; margin-top: 5px; color: var(--tg-theme-button-color, #3390ec); }
-        .delete-btn {
+        .delete-event-btn {
             background: #ff3b30;
             padding: 8px 15px;
             width: auto;
             font-size: 14px;
+        }
+        .note-content {
+            font-size: 14px;
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .note-date {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666666);
         }
         .empty-state { text-align: center; padding: 40px; color: var(--tg-theme-hint-color, #666666); }
         .modal {
@@ -89,6 +130,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            z-index: 1000;
         }
         .modal-content {
             background: var(--tg-theme-bg-color, #ffffff);
@@ -96,7 +138,10 @@
             padding: 20px;
             max-width: 400px;
             width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
+        .modal-content h3 { margin-bottom: 20px; }
         .success-msg {
             position: fixed;
             bottom: 20px;
@@ -110,6 +155,16 @@
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
+            z-index: 1001;
+        }
+        .close-modal-btn {
+            background: #ff3b30;
+            margin-top: 10px;
+        }
+        hr {
+            margin: 15px 0;
+            border-color: var(--tg-theme-hint-color, #cccccc);
+            opacity: 0.3;
         }
     </style>
 </head>
@@ -135,9 +190,10 @@
         </div>
     </div>
     
+    <!-- Модальное окно для добавления/редактирования события -->
     <div id="eventModal" class="modal">
         <div class="modal-content">
-            <h3>➕ Новое событие</h3>
+            <h3 id="eventModalTitle">➕ Новое событие</h3>
             <div class="form-group">
                 <label>Название</label>
                 <input type="text" id="eventName" placeholder="Например: День рождения">
@@ -146,14 +202,16 @@
                 <label>Дата</label>
                 <input type="date" id="eventDate">
             </div>
-            <button onclick="addEvent()">Сохранить</button>
-            <button onclick="closeModal('eventModal')" style="margin-top: 10px; background: #ff3b30;">Отмена</button>
+            <input type="hidden" id="editEventId">
+            <button onclick="saveEvent()">Сохранить</button>
+            <button onclick="closeModal('eventModal')" class="close-modal-btn">Отмена</button>
         </div>
     </div>
     
+    <!-- Модальное окно для добавления/редактирования заметки -->
     <div id="noteModal" class="modal">
         <div class="modal-content">
-            <h3>📝 Новая заметка</h3>
+            <h3 id="noteModalTitle">📝 Новая заметка</h3>
             <div class="form-group">
                 <label>Название</label>
                 <input type="text" id="noteTitle" placeholder="Цель на 2026 год">
@@ -162,8 +220,9 @@
                 <label>Содержание</label>
                 <textarea id="noteContent" rows="4" placeholder="Что нужно сделать..."></textarea>
             </div>
-            <button onclick="addNote()">Сохранить</button>
-            <button onclick="closeModal('noteModal')" style="margin-top: 10px; background: #ff3b30;">Отмена</button>
+            <input type="hidden" id="editNoteId">
+            <button onclick="saveNote()">Сохранить</button>
+            <button onclick="closeModal('noteModal')" class="close-modal-btn">Отмена</button>
         </div>
     </div>
     
@@ -182,9 +241,10 @@
         const NOTES_KEY = `notes_${userId}`;
         
         // Показать сообщение об успехе
-        function showMessage(text) {
+        function showMessage(text, isError = false) {
             const msg = document.getElementById('successMsg');
             msg.textContent = text;
+            msg.style.backgroundColor = isError ? '#ff3b30' : '#4cd964';
             msg.style.opacity = '1';
             setTimeout(() => {
                 msg.style.opacity = '0';
@@ -215,7 +275,6 @@
                     return;
                 }
                 
-                // Сортируем по дате
                 events.sort((a, b) => new Date(a.date) - new Date(b.date));
                 
                 container.innerHTML = events.map(event => {
@@ -234,7 +293,10 @@
                                 <div class="event-date">📅 ${event.date}</div>
                                 <div class="event-days">${status}</div>
                             </div>
-                            <button class="delete-btn" onclick="deleteEvent(${event.id})">Удалить</button>
+                            <div class="event-actions">
+                                <button class="edit-btn" onclick="editEvent(${event.id})" style="padding: 8px 12px; width: auto;">✏️</button>
+                                <button class="delete-event-btn" onclick="deleteEvent(${event.id})">🗑</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -263,24 +325,29 @@
                     return;
                 }
                 
-                notes.reverse(); // новые сверху
+                notes.reverse();
                 
                 container.innerHTML = notes.map(note => `
                     <div class="note-item">
-                        <div class="note-info">
+                        <div class="note-header">
                             <div class="note-title">📌 ${escapeHtml(note.title)}</div>
-                            <div class="note-content">${escapeHtml(note.content)}</div>
-                            <div class="event-date">📅 ${note.created_at}</div>
+                            <div class="note-actions">
+                                <button class="edit-btn" onclick="editNote(${note.id})">✏️</button>
+                                <button class="delete-note-btn" onclick="deleteNote(${note.id})">🗑</button>
+                            </div>
                         </div>
+                        <div class="note-content">${escapeHtml(note.content)}</div>
+                        <div class="note-date">📅 ${note.created_at}</div>
                     </div>
                 `).join('');
             });
         }
         
-        // Добавление события
-        async function addEvent() {
+        // Сохранение события (добавление или редактирование)
+        function saveEvent() {
             const name = document.getElementById('eventName').value;
             const date = document.getElementById('eventDate').value;
+            const editId = document.getElementById('editEventId').value;
             
             if (!name || !date) {
                 tg.showAlert('Заполните все поля!');
@@ -295,32 +362,90 @@
                     } catch(e) { events = []; }
                 }
                 
-                const newId = Date.now();
-                events.push({
-                    id: newId,
-                    name: name,
-                    date: date,
-                    created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
-                });
+                if (editId) {
+                    // Редактирование существующего события
+                    const index = events.findIndex(e => e.id == editId);
+                    if (index !== -1) {
+                        events[index].name = name;
+                        events[index].date = date;
+                        showMessage('✏️ Событие обновлено!');
+                    }
+                } else {
+                    // Новое событие
+                    events.push({
+                        id: Date.now(),
+                        name: name,
+                        date: date,
+                        created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    });
+                    showMessage('✅ Событие добавлено!');
+                }
                 
                 Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
                     if (saved) {
-                        showMessage('✅ Событие добавлено!');
                         closeModal('eventModal');
                         document.getElementById('eventName').value = '';
                         document.getElementById('eventDate').value = '';
+                        document.getElementById('editEventId').value = '';
                         loadEvents();
                     } else {
-                        tg.showAlert('❌ Ошибка сохранения');
+                        showMessage('❌ Ошибка сохранения', true);
                     }
                 });
             });
         }
         
-        // Добавление заметки
-        async function addNote() {
+        // Редактирование события
+        function editEvent(eventId) {
+            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
+                let events = [];
+                if (items[EVENTS_KEY]) {
+                    try {
+                        events = JSON.parse(items[EVENTS_KEY]);
+                    } catch(e) { events = []; }
+                }
+                
+                const event = events.find(e => e.id == eventId);
+                if (event) {
+                    document.getElementById('eventModalTitle').textContent = '✏️ Редактировать событие';
+                    document.getElementById('eventName').value = event.name;
+                    document.getElementById('eventDate').value = event.date;
+                    document.getElementById('editEventId').value = event.id;
+                    document.getElementById('eventModal').style.display = 'flex';
+                }
+            });
+        }
+        
+        // Удаление события
+        function deleteEvent(eventId) {
+            tg.showConfirm('Удалить событие?', (confirmed) => {
+                if (confirmed) {
+                    Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
+                        let events = [];
+                        if (items[EVENTS_KEY]) {
+                            try {
+                                events = JSON.parse(items[EVENTS_KEY]);
+                            } catch(e) { events = []; }
+                        }
+                        
+                        events = events.filter(e => e.id != eventId);
+                        
+                        Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
+                            if (saved) {
+                                showMessage('🗑 Событие удалено');
+                                loadEvents();
+                            }
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Сохранение заметки (добавление или редактирование)
+        function saveNote() {
             const title = document.getElementById('noteTitle').value;
             const content = document.getElementById('noteContent').value;
+            const editId = document.getElementById('editNoteId').value;
             
             if (!title || !content) {
                 tg.showAlert('Заполните все поля!');
@@ -335,45 +460,83 @@
                     } catch(e) { notes = []; }
                 }
                 
-                notes.push({
-                    id: Date.now(),
-                    title: title,
-                    content: content,
-                    created_at: new Date().toLocaleString('ru-RU')
-                });
+                if (editId) {
+                    // Редактирование существующей заметки
+                    const index = notes.findIndex(n => n.id == editId);
+                    if (index !== -1) {
+                        notes[index].title = title;
+                        notes[index].content = content;
+                        notes[index].updated_at = new Date().toLocaleString('ru-RU');
+                        showMessage('✏️ Заметка обновлена!');
+                    }
+                } else {
+                    // Новая заметка
+                    notes.push({
+                        id: Date.now(),
+                        title: title,
+                        content: content,
+                        created_at: new Date().toLocaleString('ru-RU')
+                    });
+                    showMessage('✅ Заметка добавлена!');
+                }
                 
                 Telegram.WebApp.CloudStorage.setItem(NOTES_KEY, JSON.stringify(notes), (err, saved) => {
                     if (saved) {
-                        showMessage('✅ Заметка добавлена!');
                         closeModal('noteModal');
                         document.getElementById('noteTitle').value = '';
                         document.getElementById('noteContent').value = '';
+                        document.getElementById('editNoteId').value = '';
                         loadNotes();
                     } else {
-                        tg.showAlert('❌ Ошибка сохранения');
+                        showMessage('❌ Ошибка сохранения', true);
                     }
                 });
             });
         }
         
-        // Удаление события
-        async function deleteEvent(eventId) {
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                let events = [];
-                if (items[EVENTS_KEY]) {
+        // Редактирование заметки
+        function editNote(noteId) {
+            Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
+                let notes = [];
+                if (items[NOTES_KEY]) {
                     try {
-                        events = JSON.parse(items[EVENTS_KEY]);
-                    } catch(e) { events = []; }
+                        notes = JSON.parse(items[NOTES_KEY]);
+                    } catch(e) { notes = []; }
                 }
                 
-                events = events.filter(e => e.id !== eventId);
-                
-                Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
-                    if (saved) {
-                        showMessage('🗑 Событие удалено');
-                        loadEvents();
-                    }
-                });
+                const note = notes.find(n => n.id == noteId);
+                if (note) {
+                    document.getElementById('noteModalTitle').textContent = '✏️ Редактировать заметку';
+                    document.getElementById('noteTitle').value = note.title;
+                    document.getElementById('noteContent').value = note.content;
+                    document.getElementById('editNoteId').value = note.id;
+                    document.getElementById('noteModal').style.display = 'flex';
+                }
+            });
+        }
+        
+        // Удаление заметки
+        function deleteNote(noteId) {
+            tg.showConfirm('Удалить заметку?', (confirmed) => {
+                if (confirmed) {
+                    Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
+                        let notes = [];
+                        if (items[NOTES_KEY]) {
+                            try {
+                                notes = JSON.parse(items[NOTES_KEY]);
+                            } catch(e) { notes = []; }
+                        }
+                        
+                        notes = notes.filter(n => n.id != noteId);
+                        
+                        Telegram.WebApp.CloudStorage.setItem(NOTES_KEY, JSON.stringify(notes), (err, saved) => {
+                            if (saved) {
+                                showMessage('🗑 Заметка удалена');
+                                loadNotes();
+                            }
+                        });
+                    });
+                }
             });
         }
         
@@ -389,10 +552,18 @@
         }
         
         function showAddEventModal() {
+            document.getElementById('eventModalTitle').textContent = '➕ Новое событие';
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('editEventId').value = '';
             document.getElementById('eventModal').style.display = 'flex';
         }
         
         function showAddNoteModal() {
+            document.getElementById('noteModalTitle').textContent = '📝 Новая заметка';
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            document.getElementById('editNoteId').value = '';
             document.getElementById('noteModal').style.display = 'flex';
         }
         
@@ -407,6 +578,13 @@
                 if (m === '>') return '&gt;';
                 return m;
             });
+        }
+        
+        // Закрытие модалки по клику вне области
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
         }
         
         // Инициализация
