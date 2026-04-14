@@ -20,6 +20,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .tab {
             flex: 1;
@@ -31,6 +32,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s;
+            min-width: 100px;
         }
         .tab.active {
             background: var(--tg-theme-button-color, #3390ec);
@@ -60,19 +62,19 @@
             font-weight: 500;
             cursor: pointer;
         }
-        .event-item, .note-item {
+        .event-item, .note-item, .history-item {
             background: var(--tg-theme-secondary-bg-color, #f5f5f5);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 10px;
         }
-        .note-header, .event-header {
+        .note-header, .event-header, .history-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 10px;
         }
-        .event-name, .note-title {
+        .event-name, .note-title, .history-name {
             font-weight: bold;
             font-size: 16px;
             flex: 1;
@@ -88,17 +90,20 @@
         }
         .edit-btn { background: var(--tg-theme-button-color, #3390ec); }
         .delete-event-btn, .delete-note-btn { background: #ff3b30; }
-        .event-datetime {
+        .event-datetime, .history-datetime {
             font-size: 14px;
             color: var(--tg-theme-hint-color, #666666);
             margin-bottom: 5px;
         }
-        .event-days {
+        .event-days, .history-status {
             font-size: 14px;
             margin-top: 5px;
-            color: var(--tg-theme-button-color, #3390ec);
             font-weight: 500;
         }
+        .event-days { color: var(--tg-theme-button-color, #3390ec); }
+        .history-status.past { color: #8e8e93; }
+        .history-status.today { color: #ff9500; }
+        .history-status.future { color: #34c759; }
         .reminder-badge {
             display: inline-block;
             background: #ff9500;
@@ -188,10 +193,43 @@
             width: auto;
             margin: 0;
         }
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .filter-btn.active {
+            background: var(--tg-theme-button-color, #3390ec);
+            color: white;
+        }
+        .stats {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .stats span {
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #3390ec);
+        }
         hr {
             margin: 15px 0;
             border-color: var(--tg-theme-hint-color, #cccccc);
             opacity: 0.3;
+        }
+        .back-btn {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -203,12 +241,25 @@
         
         <div class="tabs">
             <button class="tab active" onclick="showTab('events')">📅 События</button>
+            <button class="tab" onclick="showTab('history')">📜 История</button>
             <button class="tab" onclick="showTab('notes')">📝 Заметки</button>
         </div>
         
         <div id="eventsTab">
             <button onclick="showAddEventModal()" style="margin-bottom: 20px;">➕ Добавить событие</button>
             <div id="eventsList"></div>
+        </div>
+        
+        <div id="historyTab" style="display: none;">
+            <button onclick="goBackToEvents()" class="back-btn">← Назад к событиям</button>
+            <div class="stats" id="historyStats"></div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="setHistoryFilter('all')">📋 Все</button>
+                <button class="filter-btn" onclick="setHistoryFilter('past')">✅ Прошедшие</button>
+                <button class="filter-btn" onclick="setHistoryFilter('today')">🎉 Сегодня</button>
+                <button class="filter-btn" onclick="setHistoryFilter('future')">⏳ Будущие</button>
+            </div>
+            <div id="historyList"></div>
         </div>
         
         <div id="notesTab" style="display: none;">
@@ -275,6 +326,7 @@
         tg.MainButton.hide();
         
         let userId = tg.initDataUnsafe?.user?.id || 'anonymous';
+        let currentHistoryFilter = 'all';
         
         const EVENTS_KEY = `events_${userId}`;
         const NOTES_KEY = `notes_${userId}`;
@@ -288,6 +340,25 @@
             setTimeout(() => {
                 msg.style.opacity = '0';
             }, 2000);
+        }
+        
+        function goBackToEvents() {
+            showTab('events');
+        }
+        
+        function setHistoryFilter(filter) {
+            currentHistoryFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(
+                    filter === 'all' ? 'Все' : 
+                    filter === 'past' ? 'Прошедшие' : 
+                    filter === 'today' ? 'Сегодня' : 'Будущие'
+                )) {
+                    btn.classList.add('active');
+                }
+            });
+            loadHistory();
         }
         
         // Проверка и отправка напоминаний
@@ -306,7 +377,6 @@
                 }
                 
                 const now = new Date();
-                const todayStr = now.toDateString();
                 
                 events.forEach(event => {
                     const eventDateTime = new Date(event.datetime);
@@ -334,7 +404,7 @@
             });
         }
         
-        // Загрузка событий
+        // Загрузка событий (активные)
         function loadEvents() {
             Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
                 if (err) { console.error(err); return; }
@@ -352,9 +422,18 @@
                     return;
                 }
                 
-                events.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+                // Показываем только будущие и сегодняшние события
+                const activeEvents = events.filter(event => {
+                    const eventDateTime = new Date(event.datetime);
+                    return eventDateTime >= new Date(now.setHours(0, 0, 0, 0));
+                }).sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
                 
-                container.innerHTML = events.map(event => {
+                if (activeEvents.length === 0) {
+                    container.innerHTML = '<div class="empty-state">✨ Нет предстоящих событий. Отдыхайте!<br><br>📜 Посмотрите <b>Историю</b> для прошедших событий.</div>';
+                    return;
+                }
+                
+                container.innerHTML = activeEvents.map(event => {
                     const eventDateTime = new Date(event.datetime);
                     const daysLeft = Math.ceil((eventDateTime - now) / (1000 * 60 * 60 * 24));
                     const hoursLeft = Math.floor((eventDateTime - now) / (1000 * 60 * 60));
@@ -364,7 +443,6 @@
                     else if (daysLeft === 1) status = `⏳ ${hoursLeft} часов осталось`;
                     else if (daysLeft === 0 && eventDateTime > now) status = `⏰ Сегодня в ${event.datetime.slice(11, 16)}`;
                     else if (daysLeft === 0 && eventDateTime <= now) status = '🎉 СЕГОДНЯ! 🎉';
-                    else status = `✅ Прошло ${-daysLeft} дней назад`;
                     
                     const formattedDatetime = event.datetime.replace('T', ' в ');
                     const reminderCount = event.reminders ? event.reminders.length : 0;
@@ -386,6 +464,95 @@
                 }).join('');
                 
                 checkAndSendReminders();
+            });
+        }
+        
+        // Загрузка истории (все события)
+        function loadHistory() {
+            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
+                if (err) { console.error(err); return; }
+                
+                let events = [];
+                if (items[EVENTS_KEY]) {
+                    try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
+                }
+                
+                const now = new Date();
+                const today = new Date(now.setHours(0, 0, 0, 0));
+                
+                // Фильтрация
+                let filteredEvents = events;
+                if (currentHistoryFilter === 'past') {
+                    filteredEvents = events.filter(e => new Date(e.datetime) < today);
+                } else if (currentHistoryFilter === 'today') {
+                    filteredEvents = events.filter(e => {
+                        const eDate = new Date(e.datetime);
+                        return eDate.toDateString() === today.toDateString();
+                    });
+                } else if (currentHistoryFilter === 'future') {
+                    filteredEvents = events.filter(e => new Date(e.datetime) >= today);
+                }
+                
+                // Статистика
+                const pastCount = events.filter(e => new Date(e.datetime) < today).length;
+                const todayCount = events.filter(e => {
+                    const eDate = new Date(e.datetime);
+                    return eDate.toDateString() === today.toDateString();
+                }).length;
+                const futureCount = events.filter(e => new Date(e.datetime) >= today).length;
+                
+                document.getElementById('historyStats').innerHTML = `
+                    📊 Всего: <span>${events.length}</span> | 
+                    ✅ Прошло: <span>${pastCount}</span> | 
+                    🎉 Сегодня: <span>${todayCount}</span> | 
+                    ⏳ Осталось: <span>${futureCount}</span>
+                `;
+                
+                const container = document.getElementById('historyList');
+                
+                if (filteredEvents.length === 0) {
+                    container.innerHTML = '<div class="empty-state">📭 Нет событий в этом разделе</div>';
+                    return;
+                }
+                
+                // Сортируем по дате (новые сверху для прошедших, старые сверху для будущих)
+                if (currentHistoryFilter === 'past') {
+                    filteredEvents.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+                } else {
+                    filteredEvents.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+                }
+                
+                container.innerHTML = filteredEvents.map(event => {
+                    const eventDateTime = new Date(event.datetime);
+                    const daysDiff = Math.ceil((eventDateTime - today) / (1000 * 60 * 60 * 24));
+                    const formattedDatetime = event.datetime.replace('T', ' в ');
+                    
+                    let status = '';
+                    let statusClass = '';
+                    if (daysDiff < 0) {
+                        status = `✅ Прошло ${-daysDiff} дней назад`;
+                        statusClass = 'past';
+                    } else if (daysDiff === 0) {
+                        status = `🎉 СЕГОДНЯ в ${event.datetime.slice(11, 16)}`;
+                        statusClass = 'today';
+                    } else {
+                        status = `⏳ Через ${daysDiff} дней`;
+                        statusClass = 'future';
+                    }
+                    
+                    const reminderCount = event.reminders ? event.reminders.length : 0;
+                    const reminderBadge = reminderCount > 0 ? `<span class="reminder-badge">🔔 ${reminderCount}</span>` : '';
+                    
+                    return `
+                        <div class="history-item">
+                            <div class="history-header">
+                                <div class="history-name">📌 ${escapeHtml(event.name)} ${reminderBadge}</div>
+                            </div>
+                            <div class="history-datetime">📅 ${formattedDatetime}</div>
+                            <div class="history-status ${statusClass}">${status}</div>
+                        </div>
+                    `;
+                }).join('');
             });
         }
         
@@ -436,6 +603,7 @@
                         document.getElementById('editEventId').value = '';
                         document.querySelectorAll('.reminder-check').forEach(cb => cb.checked = false);
                         loadEvents();
+                        if (currentHistoryFilter) loadHistory();
                     } else {
                         showMessage('❌ Ошибка сохранения', true);
                     }
@@ -483,6 +651,7 @@
                             if (saved) {
                                 showMessage('🗑 Событие удалено');
                                 loadEvents();
+                                if (currentHistoryFilter) loadHistory();
                             }
                         });
                     });
@@ -618,12 +787,21 @@
         
         function showTab(tab) {
             document.getElementById('eventsTab').style.display = tab === 'events' ? 'block' : 'none';
+            document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
             document.getElementById('notesTab').style.display = tab === 'notes' ? 'block' : 'none';
+            
             document.querySelectorAll('.tab').forEach((btn, i) => {
-                btn.classList.toggle('active', (tab === 'events' && i === 0) || (tab === 'notes' && i === 1));
+                const btnText = btn.textContent.trim();
+                btn.classList.toggle('active', 
+                    (tab === 'events' && btnText.includes('События')) ||
+                    (tab === 'history' && btnText.includes('История')) ||
+                    (tab === 'notes' && btnText.includes('Заметки'))
+                );
             });
+            
             if (tab === 'events') loadEvents();
-            else loadNotes();
+            else if (tab === 'history') loadHistory();
+            else if (tab === 'notes') loadNotes();
         }
         
         function showAddEventModal() {
@@ -662,9 +840,7 @@
             }
         }
         
-        // Проверка напоминаний каждые 30 секунд
         setInterval(checkAndSendReminders, 30000);
-        
         loadEvents();
     </script>
 </body>
