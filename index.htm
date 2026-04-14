@@ -38,7 +38,7 @@
         }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 500; }
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--tg-theme-hint-color, #cccccc);
@@ -66,47 +66,47 @@
             border-radius: 10px;
             margin-bottom: 10px;
         }
-        .note-header {
+        .note-header, .event-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 10px;
         }
-        .note-title {
+        .event-name, .note-title {
             font-weight: bold;
             font-size: 16px;
             flex: 1;
         }
-        .note-actions {
+        .event-actions, .note-actions {
             display: flex;
             gap: 8px;
         }
-        .edit-btn, .delete-note-btn {
+        .edit-btn, .delete-event-btn, .delete-note-btn {
             padding: 6px 12px;
             width: auto;
             font-size: 12px;
         }
         .edit-btn { background: var(--tg-theme-button-color, #3390ec); }
-        .delete-note-btn { background: #ff3b30; }
-        .event-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .event-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .event-info { flex: 1; }
-        .event-name { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
-        .event-date { font-size: 14px; color: var(--tg-theme-hint-color, #666666); margin-bottom: 5px; }
-        .event-days { font-size: 14px; margin-top: 5px; color: var(--tg-theme-button-color, #3390ec); }
-        .delete-event-btn {
-            background: #ff3b30;
-            padding: 8px 15px;
-            width: auto;
+        .delete-event-btn, .delete-note-btn { background: #ff3b30; }
+        .event-datetime {
             font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+            margin-bottom: 5px;
+        }
+        .event-days {
+            font-size: 14px;
+            margin-top: 5px;
+            color: var(--tg-theme-button-color, #3390ec);
+            font-weight: 500;
+        }
+        .reminder-badge {
+            display: inline-block;
+            background: #ff9500;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
         }
         .note-content {
             font-size: 14px;
@@ -161,6 +161,33 @@
             background: #ff3b30;
             margin-top: 10px;
         }
+        .reminder-options {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .reminder-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .reminder-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .reminder-checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .reminder-checkboxes input {
+            width: auto;
+            margin: 0;
+        }
         hr {
             margin: 15px 0;
             border-color: var(--tg-theme-hint-color, #cccccc);
@@ -195,13 +222,27 @@
         <div class="modal-content">
             <h3 id="eventModalTitle">➕ Новое событие</h3>
             <div class="form-group">
-                <label>Название</label>
+                <label>Название события</label>
                 <input type="text" id="eventName" placeholder="Например: День рождения">
             </div>
             <div class="form-group">
-                <label>Дата</label>
-                <input type="date" id="eventDate">
+                <label>Дата и время</label>
+                <input type="datetime-local" id="eventDatetime">
             </div>
+            
+            <div class="reminder-options">
+                <div class="reminder-title">⏰ Напоминания</div>
+                <div class="reminder-checkboxes">
+                    <label><input type="checkbox" value="30" class="reminder-check"> за 30 дней</label>
+                    <label><input type="checkbox" value="20" class="reminder-check"> за 20 дней</label>
+                    <label><input type="checkbox" value="15" class="reminder-check"> за 15 дней</label>
+                    <label><input type="checkbox" value="10" class="reminder-check"> за 10 дней</label>
+                    <label><input type="checkbox" value="5" class="reminder-check"> за 5 дней</label>
+                    <label><input type="checkbox" value="2" class="reminder-check"> за 2 дня</label>
+                    <label><input type="checkbox" value="1" class="reminder-check"> за 1 день</label>
+                </div>
+            </div>
+            
             <input type="hidden" id="editEventId">
             <button onclick="saveEvent()">Сохранить</button>
             <button onclick="closeModal('eventModal')" class="close-modal-btn">Отмена</button>
@@ -233,14 +274,12 @@
         tg.expand();
         tg.MainButton.hide();
         
-        // Получаем ID пользователя из Telegram
         let userId = tg.initDataUnsafe?.user?.id || 'anonymous';
         
-        // Ключи для CloudStorage
         const EVENTS_KEY = `events_${userId}`;
         const NOTES_KEY = `notes_${userId}`;
+        const REMINDERS_KEY = `reminders_${userId}`;
         
-        // Показать сообщение об успехе
         function showMessage(text, isError = false) {
             const msg = document.getElementById('successMsg');
             msg.textContent = text;
@@ -251,71 +290,214 @@
             }, 2000);
         }
         
-        // Загрузка событий из CloudStorage
-        async function loadEvents() {
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                if (err) {
-                    console.error('Ошибка загрузки:', err);
-                    return;
-                }
+        // Проверка и отправка напоминаний
+        function checkAndSendReminders() {
+            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY, REMINDERS_KEY], (err, items) => {
+                if (err) return;
                 
                 let events = [];
                 if (items[EVENTS_KEY]) {
-                    try {
-                        events = JSON.parse(items[EVENTS_KEY]);
-                    } catch(e) { events = []; }
+                    try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {}
+                }
+                
+                let sentReminders = [];
+                if (items[REMINDERS_KEY]) {
+                    try { sentReminders = JSON.parse(items[REMINDERS_KEY]); } catch(e) {}
+                }
+                
+                const now = new Date();
+                const todayStr = now.toDateString();
+                
+                events.forEach(event => {
+                    const eventDateTime = new Date(event.datetime);
+                    const daysLeft = Math.ceil((eventDateTime - now) / (1000 * 60 * 60 * 24));
+                    
+                    if (event.reminders && event.reminders.length > 0) {
+                        event.reminders.forEach(days => {
+                            const reminderKey = `${event.id}_${days}`;
+                            const shouldRemind = daysLeft === parseInt(days);
+                            
+                            if (shouldRemind && !sentReminders.includes(reminderKey)) {
+                                sentReminders.push(reminderKey);
+                                
+                                tg.showPopup({
+                                    title: '🔔 Напоминание',
+                                    message: `Событие "${event.name}" через ${days} дней!\nДата: ${event.datetime.replace('T', ' в ')}`,
+                                    buttons: [{type: 'ok'}]
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                Telegram.WebApp.CloudStorage.setItem(REMINDERS_KEY, JSON.stringify(sentReminders));
+            });
+        }
+        
+        // Загрузка событий
+        function loadEvents() {
+            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
+                if (err) { console.error(err); return; }
+                
+                let events = [];
+                if (items[EVENTS_KEY]) {
+                    try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
                 }
                 
                 const container = document.getElementById('eventsList');
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                const now = new Date();
                 
                 if (events.length === 0) {
                     container.innerHTML = '<div class="empty-state">📭 Нет событий. Добавьте первое!</div>';
                     return;
                 }
                 
-                events.sort((a, b) => new Date(a.date) - new Date(b.date));
+                events.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
                 
                 container.innerHTML = events.map(event => {
-                    const eventDate = new Date(event.date);
-                    const daysLeft = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+                    const eventDateTime = new Date(event.datetime);
+                    const daysLeft = Math.ceil((eventDateTime - now) / (1000 * 60 * 60 * 24));
+                    const hoursLeft = Math.floor((eventDateTime - now) / (1000 * 60 * 60));
                     
                     let status = '';
-                    if (daysLeft > 0) status = `⏳ ${daysLeft} дней осталось`;
-                    else if (daysLeft === 0) status = '🎉 СЕГОДНЯ! 🎉';
-                    else status = `✅ Прошло ${-daysLeft} дней`;
+                    if (daysLeft > 1) status = `⏳ ${daysLeft} дней осталось`;
+                    else if (daysLeft === 1) status = `⏳ ${hoursLeft} часов осталось`;
+                    else if (daysLeft === 0 && eventDateTime > now) status = `⏰ Сегодня в ${event.datetime.slice(11, 16)}`;
+                    else if (daysLeft === 0 && eventDateTime <= now) status = '🎉 СЕГОДНЯ! 🎉';
+                    else status = `✅ Прошло ${-daysLeft} дней назад`;
+                    
+                    const formattedDatetime = event.datetime.replace('T', ' в ');
+                    const reminderCount = event.reminders ? event.reminders.length : 0;
+                    const reminderBadge = reminderCount > 0 ? `<span class="reminder-badge">🔔 ${reminderCount}</span>` : '';
                     
                     return `
                         <div class="event-item">
-                            <div class="event-info">
-                                <div class="event-name">📌 ${escapeHtml(event.name)}</div>
-                                <div class="event-date">📅 ${event.date}</div>
-                                <div class="event-days">${status}</div>
+                            <div class="event-header">
+                                <div class="event-name">📌 ${escapeHtml(event.name)} ${reminderBadge}</div>
+                                <div class="event-actions">
+                                    <button class="edit-btn" onclick="editEvent(${event.id})">✏️</button>
+                                    <button class="delete-event-btn" onclick="deleteEvent(${event.id})">🗑</button>
+                                </div>
                             </div>
-                            <div class="event-actions">
-                                <button class="edit-btn" onclick="editEvent(${event.id})" style="padding: 8px 12px; width: auto;">✏️</button>
-                                <button class="delete-event-btn" onclick="deleteEvent(${event.id})">🗑</button>
-                            </div>
+                            <div class="event-datetime">📅 ${formattedDatetime}</div>
+                            <div class="event-days">${status}</div>
                         </div>
                     `;
                 }).join('');
+                
+                checkAndSendReminders();
             });
         }
         
-        // Загрузка заметок из CloudStorage
-        async function loadNotes() {
-            Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
-                if (err) {
-                    console.error('Ошибка загрузки:', err);
-                    return;
+        // Сохранение события
+        function saveEvent() {
+            const name = document.getElementById('eventName').value;
+            const datetime = document.getElementById('eventDatetime').value;
+            const editId = document.getElementById('editEventId').value;
+            
+            const reminderChecks = document.querySelectorAll('.reminder-check:checked');
+            const reminders = Array.from(reminderChecks).map(cb => parseInt(cb.value));
+            
+            if (!name || !datetime) {
+                tg.showAlert('Заполните все поля!');
+                return;
+            }
+            
+            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
+                let events = [];
+                if (items[EVENTS_KEY]) {
+                    try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
                 }
+                
+                if (editId) {
+                    const index = events.findIndex(e => e.id == editId);
+                    if (index !== -1) {
+                        events[index].name = name;
+                        events[index].datetime = datetime;
+                        events[index].reminders = reminders;
+                        showMessage('✏️ Событие обновлено!');
+                    }
+                } else {
+                    events.push({
+                        id: Date.now(),
+                        name: name,
+                        datetime: datetime,
+                        reminders: reminders,
+                        created_at: new Date().toISOString()
+                    });
+                    showMessage('✅ Событие добавлено!');
+                }
+                
+                Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
+                    if (saved) {
+                        closeModal('eventModal');
+                        document.getElementById('eventName').value = '';
+                        document.getElementById('eventDatetime').value = '';
+                        document.getElementById('editEventId').value = '';
+                        document.querySelectorAll('.reminder-check').forEach(cb => cb.checked = false);
+                        loadEvents();
+                    } else {
+                        showMessage('❌ Ошибка сохранения', true);
+                    }
+                });
+            });
+        }
+        
+        // Редактирование события
+        function editEvent(eventId) {
+            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
+                let events = [];
+                if (items[EVENTS_KEY]) {
+                    try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
+                }
+                
+                const event = events.find(e => e.id == eventId);
+                if (event) {
+                    document.getElementById('eventModalTitle').textContent = '✏️ Редактировать событие';
+                    document.getElementById('eventName').value = event.name;
+                    document.getElementById('eventDatetime').value = event.datetime;
+                    document.getElementById('editEventId').value = event.id;
+                    
+                    document.querySelectorAll('.reminder-check').forEach(cb => {
+                        cb.checked = event.reminders && event.reminders.includes(parseInt(cb.value));
+                    });
+                    
+                    document.getElementById('eventModal').style.display = 'flex';
+                }
+            });
+        }
+        
+        // Удаление события
+        function deleteEvent(eventId) {
+            tg.showConfirm('Удалить событие?', (confirmed) => {
+                if (confirmed) {
+                    Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
+                        let events = [];
+                        if (items[EVENTS_KEY]) {
+                            try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) { events = []; }
+                        }
+                        
+                        events = events.filter(e => e.id != eventId);
+                        
+                        Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
+                            if (saved) {
+                                showMessage('🗑 Событие удалено');
+                                loadEvents();
+                            }
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Загрузка заметок
+        function loadNotes() {
+            Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
+                if (err) { console.error(err); return; }
                 
                 let notes = [];
                 if (items[NOTES_KEY]) {
-                    try {
-                        notes = JSON.parse(items[NOTES_KEY]);
-                    } catch(e) { notes = []; }
+                    try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                 }
                 
                 const container = document.getElementById('notesList');
@@ -343,105 +525,7 @@
             });
         }
         
-        // Сохранение события (добавление или редактирование)
-        function saveEvent() {
-            const name = document.getElementById('eventName').value;
-            const date = document.getElementById('eventDate').value;
-            const editId = document.getElementById('editEventId').value;
-            
-            if (!name || !date) {
-                tg.showAlert('Заполните все поля!');
-                return;
-            }
-            
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                let events = [];
-                if (items[EVENTS_KEY]) {
-                    try {
-                        events = JSON.parse(items[EVENTS_KEY]);
-                    } catch(e) { events = []; }
-                }
-                
-                if (editId) {
-                    // Редактирование существующего события
-                    const index = events.findIndex(e => e.id == editId);
-                    if (index !== -1) {
-                        events[index].name = name;
-                        events[index].date = date;
-                        showMessage('✏️ Событие обновлено!');
-                    }
-                } else {
-                    // Новое событие
-                    events.push({
-                        id: Date.now(),
-                        name: name,
-                        date: date,
-                        created_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
-                    });
-                    showMessage('✅ Событие добавлено!');
-                }
-                
-                Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
-                    if (saved) {
-                        closeModal('eventModal');
-                        document.getElementById('eventName').value = '';
-                        document.getElementById('eventDate').value = '';
-                        document.getElementById('editEventId').value = '';
-                        loadEvents();
-                    } else {
-                        showMessage('❌ Ошибка сохранения', true);
-                    }
-                });
-            });
-        }
-        
-        // Редактирование события
-        function editEvent(eventId) {
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                let events = [];
-                if (items[EVENTS_KEY]) {
-                    try {
-                        events = JSON.parse(items[EVENTS_KEY]);
-                    } catch(e) { events = []; }
-                }
-                
-                const event = events.find(e => e.id == eventId);
-                if (event) {
-                    document.getElementById('eventModalTitle').textContent = '✏️ Редактировать событие';
-                    document.getElementById('eventName').value = event.name;
-                    document.getElementById('eventDate').value = event.date;
-                    document.getElementById('editEventId').value = event.id;
-                    document.getElementById('eventModal').style.display = 'flex';
-                }
-            });
-        }
-        
-        // Удаление события
-        function deleteEvent(eventId) {
-            tg.showConfirm('Удалить событие?', (confirmed) => {
-                if (confirmed) {
-                    Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                        let events = [];
-                        if (items[EVENTS_KEY]) {
-                            try {
-                                events = JSON.parse(items[EVENTS_KEY]);
-                            } catch(e) { events = []; }
-                        }
-                        
-                        events = events.filter(e => e.id != eventId);
-                        
-                        Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), (err, saved) => {
-                            if (saved) {
-                                showMessage('🗑 Событие удалено');
-                                loadEvents();
-                            }
-                        });
-                    });
-                }
-            });
-        }
-        
-        // Сохранение заметки (добавление или редактирование)
+        // Сохранение заметки
         function saveNote() {
             const title = document.getElementById('noteTitle').value;
             const content = document.getElementById('noteContent').value;
@@ -455,13 +539,10 @@
             Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
                 let notes = [];
                 if (items[NOTES_KEY]) {
-                    try {
-                        notes = JSON.parse(items[NOTES_KEY]);
-                    } catch(e) { notes = []; }
+                    try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                 }
                 
                 if (editId) {
-                    // Редактирование существующей заметки
                     const index = notes.findIndex(n => n.id == editId);
                     if (index !== -1) {
                         notes[index].title = title;
@@ -470,7 +551,6 @@
                         showMessage('✏️ Заметка обновлена!');
                     }
                 } else {
-                    // Новая заметка
                     notes.push({
                         id: Date.now(),
                         title: title,
@@ -499,9 +579,7 @@
             Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
                 let notes = [];
                 if (items[NOTES_KEY]) {
-                    try {
-                        notes = JSON.parse(items[NOTES_KEY]);
-                    } catch(e) { notes = []; }
+                    try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                 }
                 
                 const note = notes.find(n => n.id == noteId);
@@ -522,9 +600,7 @@
                     Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
                         let notes = [];
                         if (items[NOTES_KEY]) {
-                            try {
-                                notes = JSON.parse(items[NOTES_KEY]);
-                            } catch(e) { notes = []; }
+                            try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) { notes = []; }
                         }
                         
                         notes = notes.filter(n => n.id != noteId);
@@ -546,7 +622,6 @@
             document.querySelectorAll('.tab').forEach((btn, i) => {
                 btn.classList.toggle('active', (tab === 'events' && i === 0) || (tab === 'notes' && i === 1));
             });
-            
             if (tab === 'events') loadEvents();
             else loadNotes();
         }
@@ -554,8 +629,9 @@
         function showAddEventModal() {
             document.getElementById('eventModalTitle').textContent = '➕ Новое событие';
             document.getElementById('eventName').value = '';
-            document.getElementById('eventDate').value = '';
+            document.getElementById('eventDatetime').value = '';
             document.getElementById('editEventId').value = '';
+            document.querySelectorAll('.reminder-check').forEach(cb => cb.checked = false);
             document.getElementById('eventModal').style.display = 'flex';
         }
         
@@ -580,14 +656,15 @@
             });
         }
         
-        // Закрытие модалки по клику вне области
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
             }
         }
         
-        // Инициализация
+        // Проверка напоминаний каждые 30 секунд
+        setInterval(checkAndSendReminders, 30000);
+        
         loadEvents();
     </script>
 </body>
