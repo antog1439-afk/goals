@@ -2,954 +2,467 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Мой Планировщик</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Планировщик</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            min-height: 100vh;
-            transition: background 0.3s ease;
-            position: relative;
+            background: #0b0f1c;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             padding: 20px;
+            color: #eef2ff;
         }
-        
-        /* Градиентные темы */
-        body.theme-default { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        body.theme-ocean { background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%); }
-        body.theme-sunset { background: linear-gradient(135deg, #f12711 0%, #f5af19 100%); }
-        body.theme-forest { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
-        body.theme-berry { background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%); }
-        body.theme-night { background: linear-gradient(135deg, #1f1c2c 0%, #302b63 100%); }
-        body.theme-custom {
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-        body.theme-custom::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            pointer-events: none;
-            z-index: 0;
-        }
-        
         .container {
-            max-width: 600px;
+            max-width: 550px;
             margin: 0 auto;
-            position: relative;
-            z-index: 1;
         }
-        
-        /* Кнопка настроек фона */
-        .theme-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 25px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+        .card {
+            background: rgba(18, 24, 38, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 36px;
+            padding: 24px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.08);
         }
-        
-        .theme-btn:hover { transform: scale(1.1); }
-        
-        /* Панель выбора темы */
-        .theme-panel {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 15px;
-            width: 250px;
-            z-index: 100;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            transform: scale(0);
-            opacity: 0;
-            transition: all 0.3s ease;
-            transform-origin: bottom right;
-        }
-        
-        .theme-panel.show {
-            transform: scale(1);
-            opacity: 1;
-        }
-        
-        .theme-panel h4 {
-            margin-bottom: 10px;
-            color: #2d3748;
-            font-size: 14px;
-        }
-        
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .theme-option {
-            width: 100%;
-            height: 50px;
-            border-radius: 12px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.2s ease;
-        }
-        
-        .theme-option:hover { transform: scale(1.05); }
-        .theme-option.selected { border-color: white; box-shadow: 0 0 0 2px #667eea; }
-        
-        .custom-theme-btn, .reset-theme-btn {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        
-        .custom-theme-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .reset-theme-btn {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-        
-        /* Шапка — без рамки */
         .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-        }
-        
-        .header h1 {
-            font-size: 34px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 8px;
-        }
-        
-        .header p {
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 14px;
-        }
-        
-        /* Табы — без рамок */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            padding: 4px;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 12px;
-            background: transparent;
-            border: none;
-            border-radius: 26px;
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .tab.active {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(5px);
-        }
-        
-        /* Кнопка добавления */
-        .add-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: none;
-            border-radius: 30px;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .add-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-        }
-        
-        /* Карточки событий — БЕЗ РАМОК, только тень */
-        .event-item, .note-item, .history-item {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(10px);
-            padding: 18px;
-            border-radius: 24px;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-            border: none;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        }
-        
-        .event-item:hover, .note-item:hover, .history-item:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.96);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-        }
-        
-        /* Внутренние элементы карточек */
-        .event-header, .note-header, .history-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            align-items: baseline;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
         }
-        
-        .event-name, .note-title, .history-name {
+        h1 {
+            font-size: 26px;
             font-weight: 700;
-            font-size: 18px;
-            color: #1a202c;
-            flex: 1;
+            background: linear-gradient(135deg, #c084fc, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
         }
-        
-        .event-actions, .note-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .edit-btn, .delete-event-btn, .delete-note-btn {
-            padding: 6px 14px;
-            width: auto;
+        .date-badge {
+            background: #1e293b;
+            padding: 6px 12px;
+            border-radius: 40px;
             font-size: 13px;
-            border-radius: 20px;
-            border: none;
             font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            color: #a5f3fc;
         }
-        
-        .edit-btn {
-            background: rgba(72, 187, 120, 0.9);
-            color: white;
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
         }
-        
-        .delete-event-btn, .delete-note-btn {
-            background: rgba(245, 101, 101, 0.9);
-            color: white;
-        }
-        
-        .edit-btn:hover, .delete-event-btn:hover, .delete-note-btn:hover {
-            transform: scale(0.98);
-        }
-        
-        .event-datetime, .history-datetime {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 8px;
-        }
-        
-        .event-days, .history-status {
-            font-size: 14px;
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
             font-weight: 600;
-        }
-        
-        .event-days {
-            color: #2b6cb0;
-        }
-        
-        .reminder-badge {
-            display: inline-block;
-            background: rgba(237, 137, 54, 0.9);
-            color: white;
-            font-size: 10px;
-            padding: 3px 10px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.2s;
             border-radius: 20px;
-            margin-left: 8px;
-            font-weight: 500;
         }
-        
-        .note-content {
+        .tab.active {
+            color: white;
+            background: #2d3a5e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .add-btn {
+            background: #3b4e7a;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            margin: 16px 0 12px 0;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .add-btn:active { background: #2a3a60; transform: scale(0.97); }
+        .event-item {
+            background: #0f172ad9;
+            border-radius: 28px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            border-left: 5px solid #c084fc;
+        }
+        .event-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
             font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 8px;
-            line-height: 1.5;
+            color: #b9c7e0;
+            margin: 10px 0 8px 0;
         }
-        
-        .note-date {
-            font-size: 12px;
-            color: #718096;
+        .days-left {
+            background: #2d374b;
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 60px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #facc15;
         }
-        
         .empty-state {
             text-align: center;
-            padding: 50px 20px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            color: #4a5568;
+            padding: 40px 0;
+            color: #7e8aac;
         }
-        
-        /* Модальные окна */
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #5b6b8c;
+            margin-top: 20px;
+        }
+        button {
+            background: none;
+            border: none;
+        }
+        .delete-event {
+            background: #c2410c30;
+            color: #f97316;
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            margin-top: 10px;
+            width: auto;
+            cursor: pointer;
+        }
         .modal {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
-            z-index: 200;
+            z-index: 1000;
         }
-        
-        .modal-content {
-            background: white;
-            border-radius: 28px;
-            padding: 24px;
-            max-width: 400px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        .modal-card {
+            background: #111827;
+            border-radius: 48px;
+            padding: 28px 24px;
+            width: 85%;
+            max-width: 360px;
+            border: 1px solid #334155;
         }
-        
-        .modal-content h3 {
-            margin-bottom: 20px;
-            color: #2d3748;
-            font-size: 24px;
-        }
-        
-        .form-group { margin-bottom: 20px; }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
-        }
-        
-        input, textarea, select {
+        .modal-card input {
             width: 100%;
             padding: 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            background: #f7fafc;
+            border-radius: 60px;
+            border: none;
+            background: #1f2a44;
+            color: white;
             font-size: 16px;
-            transition: all 0.3s ease;
+            margin: 12px 0;
         }
-        
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-        }
-        
-        .modal button {
-            padding: 14px;
-            border-radius: 16px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        
-        .reminder-options {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 20px;
-            margin-top: 10px;
-        }
-        
-        .reminder-checkboxes {
+        .modal-buttons {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+            margin-top: 20px;
         }
-        
-        .reminder-checkboxes label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: normal;
-        }
-        
-        .reminder-checkboxes input {
-            width: auto;
-            margin: 0;
-        }
-        
-        .filter-buttons {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
+        .modal-buttons button {
             flex: 1;
-            padding: 10px;
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .filter-btn.active {
-            background: rgba(255, 255, 255, 0.4);
-        }
-        
-        .stats {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 16px;
-            border-radius: 24px;
-            margin-bottom: 20px;
-            text-align: center;
-            color: white;
-            font-weight: 500;
-        }
-        
-        .stats span {
-            font-weight: bold;
-            font-size: 18px;
-        }
-        
-        .back-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
-            color: white;
-            border: none;
-            border-radius: 30px;
             padding: 12px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        
-        .success-msg {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: rgba(72, 187, 120, 0.95);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 14px;
-            border-radius: 30px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 201;
+            border-radius: 40px;
             font-weight: 600;
         }
-        
-        #imageUpload { display: none; }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
-<body class="theme-default">
-    <div class="container">
+<body>
+<div class="container">
+    <div class="card">
         <div class="header">
-            <h1>🎯 Мой Планировщик</h1>
-            <p>Управляй событиями, ставь цели и никогда ничего не забывай</p>
+            <h1>📅 Мой Планировщик</h1>
+            <div class="date-badge" id="currentDate"></div>
         </div>
-        
+
         <div class="tabs">
-            <button class="tab active" onclick="showTab('events')">📅 События</button>
-            <button class="tab" onclick="showTab('history')">📜 История</button>
-            <button class="tab" onclick="showTab('notes')">📝 Заметки</button>
+            <div class="tab active" data-tab="events">📋 События</div>
+            <div class="tab" data-tab="history">✅ История</div>
+            <div class="tab" data-tab="notes">📝 Заметки</div>
         </div>
-        
-        <div id="eventsTab">
-            <button class="add-btn" onclick="showAddEventModal()">➕ Добавить событие</button>
+
+        <div id="eventsPanel">
+            <button class="add-btn" id="openEventModalBtn">➕ Добавить событие</button>
             <div id="eventsList"></div>
         </div>
-        
-        <div id="historyTab" style="display: none;">
-            <button class="back-btn" onclick="goBackToEvents()">← Назад к событиям</button>
-            <div class="stats" id="historyStats"></div>
-            <div class="filter-buttons">
-                <button class="filter-btn active" onclick="setHistoryFilter('all')">📋 Все</button>
-                <button class="filter-btn" onclick="setHistoryFilter('past')">✅ Прошедшие</button>
-                <button class="filter-btn" onclick="setHistoryFilter('today')">🎉 Сегодня</button>
-                <button class="filter-btn" onclick="setHistoryFilter('future')">⏳ Будущие</button>
-            </div>
-            <div id="historyList"></div>
-        </div>
-        
-        <div id="notesTab" style="display: none;">
-            <button class="add-btn" onclick="showAddNoteModal()">📝 Добавить заметку</button>
-            <div id="notesList"></div>
-        </div>
-    </div>
-    
-    <!-- Кнопка выбора фона -->
-    <button class="theme-btn" onclick="toggleThemePanel()">🎨</button>
-    
-    <!-- Панель выбора темы -->
-    <div class="theme-panel" id="themePanel">
-        <h4>🎨 Выбери фон</h4>
-        <div class="theme-grid">
-            <div class="theme-option" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="setTheme('default')"></div>
-            <div class="theme-option" style="background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);" onclick="setTheme('ocean')"></div>
-            <div class="theme-option" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);" onclick="setTheme('sunset')"></div>
-            <div class="theme-option" style="background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);" onclick="setTheme('forest')"></div>
-            <div class="theme-option" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);" onclick="setTheme('berry')"></div>
-            <div class="theme-option" style="background: linear-gradient(135deg, #1f1c2c 0%, #302b63 100%);" onclick="setTheme('night')"></div>
-        </div>
-        <button class="custom-theme-btn" onclick="uploadCustomBackground()">📸 Своё фото</button>
-        <button class="reset-theme-btn" onclick="resetToDefault()">🔄 Сбросить</button>
-    </div>
-    
-    <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
-    
-    <!-- Модальные окна -->
-    <div id="eventModal" class="modal">
-        <div class="modal-content">
-            <h3 id="eventModalTitle">➕ Новое событие</h3>
-            <div class="form-group">
-                <label>Название события</label>
-                <input type="text" id="eventName" placeholder="Например: День рождения">
-            </div>
-            <div class="form-group">
-                <label>Дата и время</label>
-                <input type="datetime-local" id="eventDatetime">
-            </div>
-            <div class="reminder-options">
-                <div class="reminder-title">⏰ Напоминания</div>
-                <div class="reminder-checkboxes">
-                    <label><input type="checkbox" value="30" class="reminder-check"> за 30 дней</label>
-                    <label><input type="checkbox" value="20" class="reminder-check"> за 20 дней</label>
-                    <label><input type="checkbox" value="15" class="reminder-check"> за 15 дней</label>
-                    <label><input type="checkbox" value="10" class="reminder-check"> за 10 дней</label>
-                    <label><input type="checkbox" value="5" class="reminder-check"> за 5 дней</label>
-                    <label><input type="checkbox" value="2" class="reminder-check"> за 2 дня</label>
-                    <label><input type="checkbox" value="1" class="reminder-check"> за 1 день</label>
-                </div>
-            </div>
-            <input type="hidden" id="editEventId">
-            <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;" onclick="saveEvent()">Сохранить</button>
-            <button style="background: #e2e8f0; color: #4a5568; margin-top: 10px;" onclick="closeModal('eventModal')">Отмена</button>
-        </div>
-    </div>
-    
-    <div id="noteModal" class="modal">
-        <div class="modal-content">
-            <h3 id="noteModalTitle">📝 Новая заметка</h3>
-            <div class="form-group">
-                <label>Название</label>
-                <input type="text" id="noteTitle" placeholder="Цель на 2026 год">
-            </div>
-            <div class="form-group">
-                <label>Содержание</label>
-                <textarea id="noteContent" rows="4" placeholder="Что нужно сделать..."></textarea>
-            </div>
-            <input type="hidden" id="editNoteId">
-            <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;" onclick="saveNote()">Сохранить</button>
-            <button style="background: #e2e8f0; color: #4a5568; margin-top: 10px;" onclick="closeModal('noteModal')">Отмена</button>
-        </div>
-    </div>
-    
-    <div id="successMsg" class="success-msg"></div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.MainButton.hide();
-        
-        let userId = tg.initDataUnsafe?.user?.id || 'anonymous';
-        let currentHistoryFilter = 'all';
-        
-        const EVENTS_KEY = `events_${userId}`;
-        const NOTES_KEY = `notes_${userId}`;
-        const REMINDERS_KEY = `reminders_${userId}`;
-        const THEME_KEY = `theme_${userId}`;
-        const CUSTOM_BG_KEY = `custom_bg_${userId}`;
-        
-        // --- Функции для работы с фоном ---
-        function toggleThemePanel() {
-            const panel = document.getElementById('themePanel');
-            panel.classList.toggle('show');
+        <div id="historyPanel" class="hidden">
+            <div id="historyList" class="empty-state">✨ Выполненные события появятся здесь</div>
+        </div>
+
+        <div id="notesPanel" class="hidden">
+            <textarea id="notesText" rows="5" placeholder="Ваши заметки... (сохраняются автоматически)" style="width:100%; background:#0f172a; border:1px solid #2d3a5e; border-radius:24px; padding:16px; color:white; font-size:15px;"></textarea>
+            <div class="footer-note" style="margin-top:12px;">💾 Заметки сохраняются на вашем устройстве</div>
+        </div>
+    </div>
+    <div class="footer-note">🎯 ставь цели и ничего не забывай</div>
+</div>
+
+<!-- Модалка добавления события -->
+<div id="eventModal" class="modal hidden">
+    <div class="modal-card">
+        <h3 style="margin-bottom: 8px;">➕ Новое событие</h3>
+        <input type="text" id="eventTitle" placeholder="Название, например Концерт BIG BABY TAPE" autocomplete="off">
+        <input type="datetime-local" id="eventDatetime">
+        <div class="modal-buttons">
+            <button id="saveEventBtn" style="background:#3b4e7a;">Сохранить</button>
+            <button id="closeModalBtn" style="background:#1e293b;">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // -------- Хранилище --------
+    let events = [];       // { id, title, datetime, completed }
+    let completedEvents = [];
+    let notes = "";
+
+    // Загрузка из localStorage
+    function loadData() {
+        const savedEvents = localStorage.getItem("planner_events");
+        if(savedEvents) events = JSON.parse(savedEvents);
+        const savedCompleted = localStorage.getItem("planner_completed");
+        if(savedCompleted) completedEvents = JSON.parse(savedCompleted);
+        const savedNotes = localStorage.getItem("planner_notes");
+        if(savedNotes !== null) notes = savedNotes;
+        document.getElementById("notesText").value = notes;
+    }
+
+    function saveEvents() {
+        localStorage.setItem("planner_events", JSON.stringify(events));
+    }
+    function saveCompleted() {
+        localStorage.setItem("planner_completed", JSON.stringify(completedEvents));
+    }
+    function saveNotes() {
+        localStorage.setItem("planner_notes", notes);
+    }
+
+    // ---- рендер событий (активные) ----
+    function renderEvents() {
+        const container = document.getElementById("eventsList");
+        if(!events.length) {
+            container.innerHTML = `<div class="empty-state">🎯 Нет запланированных событий<br>Нажмите «Добавить событие»</div>`;
+            return;
         }
-        
-        function setTheme(themeName) {
-            const body = document.body;
-            body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest', 'theme-berry', 'theme-night', 'theme-custom');
-            body.classList.add(`theme-${themeName}`);
-            localStorage.setItem(THEME_KEY, themeName);
-            showMessage('🎨 Тема изменена!');
-            setTimeout(() => {
-                document.getElementById('themePanel').classList.remove('show');
-            }, 500);
-        }
-        
-        function uploadCustomBackground() {
-            document.getElementById('imageUpload').click();
-        }
-        
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageUrl = e.target.result;
-                    const body = document.body;
-                    body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest', 'theme-berry', 'theme-night');
-                    body.classList.add('theme-custom');
-                    body.style.backgroundImage = `url(${imageUrl})`;
-                    body.style.backgroundSize = 'cover';
-                    body.style.backgroundPosition = 'center';
-                    body.style.backgroundAttachment = 'fixed';
-                    localStorage.setItem(THEME_KEY, 'custom');
-                    localStorage.setItem(CUSTOM_BG_KEY, imageUrl);
-                    showMessage('📸 Фото установлено как фон!');
-                    document.getElementById('themePanel').classList.remove('show');
-                };
-                reader.readAsDataURL(file);
+        // сортировка по дате (ближайшие первые)
+        const sorted = [...events].sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+        container.innerHTML = sorted.map(ev => {
+            const eventDate = new Date(ev.datetime);
+            const now = new Date();
+            const diffDays = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
+            let daysText = "";
+            if(diffDays > 0) daysText = `${diffDays} ${declension(diffDays, "день", "дня", "дней")} осталось`;
+            else if(diffDays === 0) daysText = "🚀 СЕГОДНЯ!";
+            else daysText = "📅 Прошло";
+            
+            function declension(n, one, two, five) {
+                n = Math.abs(n);
+                if(n % 10 === 1 && n % 100 !== 11) return one;
+                if(n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return two;
+                return five;
             }
-        }
-        
-        function resetToDefault() {
-            const body = document.body;
-            body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest', 'theme-berry', 'theme-night', 'theme-custom');
-            body.classList.add('theme-default');
-            body.style.backgroundImage = '';
-            localStorage.setItem(THEME_KEY, 'default');
-            localStorage.removeItem(CUSTOM_BG_KEY);
-            showMessage('🔄 Фон сброшен к стандартному');
-            document.getElementById('themePanel').classList.remove('show');
-        }
-        
-        function loadSavedTheme() {
-            const savedTheme = localStorage.getItem(THEME_KEY);
-            const savedCustomBg = localStorage.getItem(CUSTOM_BG_KEY);
-            if (savedTheme === 'custom' && savedCustomBg) {
-                const body = document.body;
-                body.classList.add('theme-custom');
-                body.style.backgroundImage = `url(${savedCustomBg})`;
-                body.style.backgroundSize = 'cover';
-                body.style.backgroundPosition = 'center';
-                body.style.backgroundAttachment = 'fixed';
-            } else if (savedTheme && savedTheme !== 'custom') {
-                setTheme(savedTheme);
-            } else {
-                setTheme('default');
-            }
-        }
-        
-        function showMessage(text, isError = false) {
-            const msg = document.getElementById('successMsg');
-            msg.textContent = text;
-            msg.style.background = isError ? 'rgba(245, 101, 101, 0.95)' : 'rgba(72, 187, 120, 0.95)';
-            msg.style.opacity = '1';
-            setTimeout(() => {
-                msg.style.opacity = '0';
-            }, 2000);
-        }
-        
-        function goBackToEvents() { showTab('events'); }
-        
-        function setHistoryFilter(filter) {
-            currentHistoryFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent.includes(filter === 'all' ? 'Все' : filter === 'past' ? 'Прошедшие' : filter === 'today' ? 'Сегодня' : 'Будущие')) {
-                    btn.classList.add('active');
-                }
-            });
-            loadHistory();
-        }
-        
-        function checkAndSendReminders() {
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY, REMINDERS_KEY], (err, items) => {
-                if (err) return;
-                let events = [];
-                if (items[EVENTS_KEY]) { try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {} }
-                let sentReminders = [];
-                if (items[REMINDERS_KEY]) { try { sentReminders = JSON.parse(items[REMINDERS_KEY]); } catch(e) {} }
-                const now = new Date();
-                events.forEach(event => {
-                    const eventDateTime = new Date(event.datetime);
-                    const daysLeft = Math.ceil((eventDateTime - now) / (1000 * 60 * 60 * 24));
-                    if (event.reminders) {
-                        event.reminders.forEach(days => {
-                            const reminderKey = `${event.id}_${days}`;
-                            if (daysLeft === parseInt(days) && !sentReminders.includes(reminderKey)) {
-                                sentReminders.push(reminderKey);
-                                tg.showPopup({ title: '🔔 Напоминание', message: `Событие "${event.name}" через ${days} дней!\n${event.datetime.replace('T', ' в ')}`, buttons: [{type: 'ok'}] });
-                            }
-                        });
-                    }
-                });
-                Telegram.WebApp.CloudStorage.setItem(REMINDERS_KEY, JSON.stringify(sentReminders));
-            });
-        }
-        
-        function loadEvents() {
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                let events = [];
-                if (items[EVENTS_KEY]) { try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {} }
-                const container = document.getElementById('eventsList');
-                const now = new Date();
-                if (events.length === 0) {
-                    container.innerHTML = '<div class="empty-state">📭 Нет событий. Добавьте первое!</div>';
-                    return;
-                }
-                const activeEvents = events.filter(e => new Date(e.datetime) >= new Date(now.setHours(0,0,0,0))).sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
-                if (activeEvents.length === 0) {
-                    container.innerHTML = '<div class="empty-state">✨ Нет предстоящих событий.<br>📜 Посмотрите <b>Историю</b></div>';
-                    return;
-                }
-                container.innerHTML = activeEvents.map(event => {
-                    const eventDateTime = new Date(event.datetime);
-                    const daysLeft = Math.ceil((eventDateTime - now) / (1000 * 60 * 60 * 24));
-                    let status = daysLeft > 1 ? `⏳ ${daysLeft} дней осталось` : daysLeft === 1 ? `⏳ Сегодня в ${event.datetime.slice(11,16)}` : daysLeft === 0 ? '🎉 СЕГОДНЯ! 🎉' : '';
-                    return `
-                        <div class="event-item">
-                            <div class="event-header">
-                                <div class="event-name">🔔 ${escapeHtml(event.name)} ${event.reminders?.length ? `<span class="reminder-badge">🔔 ${event.reminders.length}</span>` : ''}</div>
-                                <div class="event-actions">
-                                    <button class="edit-btn" onclick="editEvent(${event.id})">✏️</button>
-                                    <button class="delete-event-btn" onclick="deleteEvent(${event.id})">🗑</button>
-                                </div>
-                            </div>
-                            <div class="event-datetime">📅 ${event.datetime.replace('T', ' в ')}</div>
-                            <div class="event-days">${status}</div>
-                        </div>
-                    `;
-                }).join('');
-                checkAndSendReminders();
-            });
-        }
-        
-        function loadHistory() {
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                let events = [];
-                if (items[EVENTS_KEY]) { try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {} }
-                const today = new Date(); today.setHours(0,0,0,0);
-                let filtered = events;
-                if (currentHistoryFilter === 'past') filtered = events.filter(e => new Date(e.datetime) < today);
-                else if (currentHistoryFilter === 'today') filtered = events.filter(e => new Date(e.datetime).toDateString() === today.toDateString());
-                else if (currentHistoryFilter === 'future') filtered = events.filter(e => new Date(e.datetime) >= today);
-                document.getElementById('historyStats').innerHTML = `📊 Всего: <span>${events.length}</span> | ✅ Прошло: <span>${events.filter(e => new Date(e.datetime) < today).length}</span> | 🎉 Сегодня: <span>${events.filter(e => new Date(e.datetime).toDateString() === today.toDateString()).length}</span> | ⏳ Осталось: <span>${events.filter(e => new Date(e.datetime) >= today).length}</span>`;
-                const container = document.getElementById('historyList');
-                if (!filtered.length) { container.innerHTML = '<div class="empty-state">📭 Нет событий</div>'; return; }
-                filtered.sort((a,b) => currentHistoryFilter === 'past' ? new Date(b.datetime) - new Date(a.datetime) : new Date(a.datetime) - new Date(b.datetime));
-                container.innerHTML = filtered.map(event => {
-                    const daysDiff = Math.ceil((new Date(event.datetime) - today) / (1000*60*60*24));
-                    let status = daysDiff < 0 ? `✅ Прошло ${-daysDiff} дней назад` : daysDiff === 0 ? `🎉 СЕГОДНЯ в ${event.datetime.slice(11,16)}` : `⏳ Через ${daysDiff} дней`;
-                    return `<div class="history-item"><div class="history-header"><div class="history-name">📌 ${escapeHtml(event.name)} ${event.reminders?.length ? `<span class="reminder-badge">🔔 ${event.reminders.length}</span>` : ''}</div></div><div class="history-datetime">📅 ${event.datetime.replace('T', ' в ')}</div><div class="history-status">${status}</div></div>`;
-                }).join('');
-            });
-        }
-        
-        function saveEvent() {
-            const name = document.getElementById('eventName').value;
-            const datetime = document.getElementById('eventDatetime').value;
-            const editId = document.getElementById('editEventId').value;
-            const reminders = [...document.querySelectorAll('.reminder-check:checked')].map(cb => parseInt(cb.value));
-            if (!name || !datetime) { tg.showAlert('Заполните поля!'); return; }
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                let events = [];
-                if (items[EVENTS_KEY]) { try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {} }
-                if (editId) {
-                    const idx = events.findIndex(e => e.id == editId);
-                    if (idx !== -1) { events[idx] = { ...events[idx], name, datetime, reminders }; showMessage('✏️ Обновлено!'); }
-                } else {
-                    events.push({ id: Date.now(), name, datetime, reminders, created_at: new Date().toISOString() });
-                    showMessage('✅ Добавлено!');
-                }
-                Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), () => {
-                    closeModal('eventModal');
-                    document.getElementById('eventName').value = '';
-                    document.getElementById('eventDatetime').value = '';
-                    document.getElementById('editEventId').value = '';
-                    document.querySelectorAll('.reminder-check').forEach(cb => cb.checked = false);
-                    loadEvents(); loadHistory();
-                });
-            });
-        }
-        
-        function editEvent(id) {
-            Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                let events = [];
-                if (items[EVENTS_KEY]) { try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {} }
-                const event = events.find(e => e.id == id);
-                if (event) {
-                    document.getElementById('eventModalTitle').innerText = '✏️ Редактировать';
-                    document.getElementById('eventName').value = event.name;
-                    document.getElementById('eventDatetime').value = event.datetime;
-                    document.getElementById('editEventId').value = event.id;
-                    document.querySelectorAll('.reminder-check').forEach(cb => cb.checked = event.reminders?.includes(parseInt(cb.value)) || false);
-                    document.getElementById('eventModal').style.display = 'flex';
-                }
-            });
-        }
-        
-        function deleteEvent(id) {
-            tg.showConfirm('Удалить событие?', (ok) => {
-                if (ok) {
-                    Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY], (err, items) => {
-                        let events = [];
-                        if (items[EVENTS_KEY]) { try { events = JSON.parse(items[EVENTS_KEY]); } catch(e) {} }
-                        events = events.filter(e => e.id != id);
-                        Telegram.WebApp.CloudStorage.setItem(EVENTS_KEY, JSON.stringify(events), () => { showMessage('🗑 Удалено'); loadEvents(); loadHistory(); });
-                    });
-                }
-            });
-        }
-        
-        function loadNotes() {
-            Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
-                let notes = [];
-                if (items[NOTES_KEY]) { try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) {} }
-                const container = document.getElementById('notesList');
-                if (!notes.length) { container.innerHTML = '<div class="empty-state">📭 Нет заметок</div>'; return; }
-                container.innerHTML = notes.reverse().map(note => `
-                    <div class="note-item">
-                        <div class="note-header">
-                            <div class="note-title">📌 ${escapeHtml(note.title)}</div>
-                            <div class="note-actions">
-                                <button class="edit-btn" onclick="editNote(${note.id})">✏️</button>
-                                <button class="delete-note-btn" onclick="deleteNote(${note.id})">🗑</button>
-                            </div>
-                        </div>
-                        <div class="note-content">${escapeHtml(note.content)}</div>
-                        <div class="note-date">📅 ${note.created_at}</div>
+            
+            const formattedDate = eventDate.toLocaleString("ru-RU", {day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"});
+            return `
+                <div class="event-item" data-id="${ev.id}">
+                    <div class="event-title">📌 ${escapeHtml(ev.title)}</div>
+                    <div class="event-meta">
+                        <span>📅 ${formattedDate}</span>
+                        <span class="days-left">${daysText}</span>
                     </div>
-                `).join('');
-            });
-        }
+                    <div style="display: flex; gap: 12px; margin-top: 12px;">
+                        <button class="delete-event" data-id="${ev.id}" data-action="complete">✅ Выполнить</button>
+                        <button class="delete-event" data-id="${ev.id}" data-action="delete">🗑️ Удалить</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
         
-        function saveNote() {
-            const title = document.getElementById('noteTitle').value;
-            const content = document.getElementById('noteContent').value;
-            const editId = document.getElementById('editNoteId').value;
-            if (!title || !content) { tg.showAlert('Заполните поля!'); return; }
-            Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
-                let notes = [];
-                if (items[NOTES_KEY]) { try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) {} }
-                if (editId) {
-                    const idx = notes.findIndex(n => n.id == editId);
-                    if (idx !== -1) { notes[idx] = { ...notes[idx], title, content, updated_at: new Date().toLocaleString('ru-RU') }; showMessage('✏️ Обновлено!'); }
-                } else {
-                    notes.push({ id: Date.now(), title, content, created_at: new Date().toLocaleString('ru-RU') });
-                    showMessage('✅ Добавлено!');
-                }
-                Telegram.WebApp.CloudStorage.setItem(NOTES_KEY, JSON.stringify(notes), () => {
-                    closeModal('noteModal');
-                    document.getElementById('noteTitle').value = '';
-                    document.getElementById('noteContent').value = '';
-                    document.getElementById('editNoteId').value = '';
-                    loadNotes();
-                });
-            });
-        }
-        
-        function editNote(id) {
-            Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
-                let notes = [];
-                if (items[NOTES_KEY]) { try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) {} }
-                const note = notes.find(n => n.id == id);
-                if (note) {
-                    document.getElementById('noteModalTitle').innerText = '✏️ Редактировать';
-                    document.getElementById('noteTitle').value = note.title;
-                    document.getElementById('noteContent').value = note.content;
-                    document.getElementById('editNoteId').value = note.id;
-                    document.getElementById('noteModal').style.display = 'flex';
+        // обработчики для кнопок
+        document.querySelectorAll('.delete-event').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.dataset.id);
+                const action = btn.dataset.action;
+                if(action === 'complete') {
+                    completeEvent(id);
+                } else if(action === 'delete') {
+                    deleteEventImmediately(id);
                 }
             });
+        });
+    }
+    
+    function completeEvent(id) {
+        const eventIndex = events.findIndex(e => e.id === id);
+        if(eventIndex !== -1) {
+            const completedEvent = {...events[eventIndex], completedAt: new Date().toISOString()};
+            completedEvents.unshift(completedEvent);
+            events.splice(eventIndex, 1);
+            saveEvents();
+            saveCompleted();
+            renderEvents();
+            renderHistory();
         }
-        
-        function deleteNote(id) {
-            tg.showConfirm('Удалить заметку?', (ok) => {
-                if (ok) {
-                    Telegram.WebApp.CloudStorage.getItems([NOTES_KEY], (err, items) => {
-                        let notes = [];
-                        if (items[NOTES_KEY]) { try { notes = JSON.parse(items[NOTES_KEY]); } catch(e) {} }
-                        notes = notes.filter(n => n.id != id);
-                        Telegram.WebApp.CloudStorage.setItem(NOTES_KEY, JSON.stringify(notes), () => { showMessage('🗑 Удалено'); loadNotes(); });
-                    });
-                }
-            });
+    }
+    
+    function deleteEventImmediately(id) {
+        events = events.filter(e => e.id !== id);
+        saveEvents();
+        renderEvents();
+    }
+    
+    function renderHistory() {
+        const container = document.getElementById("historyList");
+        if(!completedEvents.length) {
+            container.innerHTML = `<div class="empty-state">✨ Выполненные события появятся здесь</div>`;
+            return;
         }
-        
-        function showTab(tab) {
-            document.getElementById('eventsTab').style.display = tab === 'events' ? 'block' : 'none';
-            document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
-            document.getElementById('notesTab').style.display = tab === 'notes' ? 'block' : 'none';
-            document.querySelectorAll('.tab').forEach((btn,i) => btn.classList.toggle('active', (tab==='events' && i===0) || (tab==='history' && i===1) || (tab==='notes' && i===2)));
-            if (tab === 'events') loadEvents();
-            else if (tab === 'history') loadHistory();
-            else loadNotes();
+        container.innerHTML = completedEvents.map(ev => {
+            const eventDate = new Date(ev.datetime);
+            const formattedDate = eventDate.toLocaleString("ru-RU", {day:"numeric", month:"long", hour:"2-digit", minute:"2-digit"});
+            return `
+                <div class="event-item" style="border-left-color: #4ade80; opacity:0.85;">
+                    <div class="event-title">✅ ${escapeHtml(ev.title)}</div>
+                    <div class="event-meta">
+                        <span>📅 ${formattedDate}</span>
+                        <span>✔️ завершено</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    function saveNotesToStorage() {
+        notes = document.getElementById("notesText").value;
+        saveNotes();
+    }
+    
+    // ---- модалка ----
+    const modal = document.getElementById("eventModal");
+    const openBtn = document.getElementById("openEventModalBtn");
+    const closeBtn = document.getElementById("closeModalBtn");
+    const saveBtn = document.getElementById("saveEventBtn");
+    const titleInput = document.getElementById("eventTitle");
+    const datetimeInput = document.getElementById("eventDatetime");
+    
+    function openModal() {
+        titleInput.value = "";
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        datetimeInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        modal.classList.remove("hidden");
+    }
+    
+    function closeModal() {
+        modal.classList.add("hidden");
+    }
+    
+    function addEventFromModal() {
+        let title = titleInput.value.trim();
+        if(!title) {
+            alert("Введите название события");
+            return;
         }
-        
-        function showAddEventModal() {
-            document.getElementById('eventModalTitle').innerText = '➕ Новое событие';
-            document.getElementById('eventName').value = '';
-            document.getElementById('eventDatetime').value = '';
-            document.getElementById('editEventId').value = '';
-            document.querySelectorAll('.reminder-check').forEach(cb => cb.checked = false);
-            document.getElementById('eventModal').style.display = 'flex';
+        let datetime = datetimeInput.value;
+        if(!datetime) {
+            alert("Выберите дату и время");
+            return;
         }
-        
-        function showAddNoteModal() {
-            document.getElementById('noteModalTitle').innerText = '📝 Новая заметка';
-            document.getElementById('noteTitle').value = '';
-            document.getElementById('noteContent').value = '';
-            document.getElementById('editNoteId').value = '';
-            document.getElementById('noteModal').style.display = 'flex';
-        }
-        
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-        
-        window.onclick = function(e) {
-            if (e.target.classList.contains('modal')) e.target.style.display = 'none';
-            if (!e.target.closest('.theme-panel') && !e.target.closest('.theme-btn')) document.getElementById('themePanel').classList.remove('show');
+        const newEvent = {
+            id: Date.now(),
+            title: title,
+            datetime: datetime,
+            createdAt: new Date().toISOString()
         };
-        
-        loadSavedTheme();
-        setInterval(checkAndSendReminders, 30000);
-        loadEvents();
-    </script>
+        events.push(newEvent);
+        saveEvents();
+        renderEvents();
+        closeModal();
+    }
+    
+    // Табы
+    const eventsPanel = document.getElementById("eventsPanel");
+    const historyPanel = document.getElementById("historyPanel");
+    const notesPanel = document.getElementById("notesPanel");
+    const tabs = document.querySelectorAll(".tab");
+    
+    function switchTab(tabId) {
+        eventsPanel.classList.add("hidden");
+        historyPanel.classList.add("hidden");
+        notesPanel.classList.add("hidden");
+        if(tabId === "events") eventsPanel.classList.remove("hidden");
+        if(tabId === "history") historyPanel.classList.remove("hidden");
+        if(tabId === "notes") notesPanel.classList.remove("hidden");
+        tabs.forEach(t => {
+            if(t.dataset.tab === tabId) t.classList.add("active");
+            else t.classList.remove("active");
+        });
+        if(tabId === "history") renderHistory();
+        if(tabId === "notes") document.getElementById("notesText").value = notes;
+    }
+    
+    // инициализация и слушатели
+    loadData();
+    renderEvents();
+    renderHistory();
+    document.getElementById("notesText").addEventListener("input", saveNotesToStorage);
+    
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+    saveBtn.addEventListener("click", addEventFromModal);
+    modal.addEventListener("click", (e) => { if(e.target === modal) closeModal(); });
+    
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            switchTab(tab.dataset.tab);
+        });
+    });
+    
+    // показать текущую дату в шапке
+    const today = new Date();
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    document.getElementById("currentDate").innerText = today.toLocaleDateString("ru-RU", options);
+    
+    function escapeHtml(str) {
+        if(!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;';
+            if(m === '<') return '&lt;';
+            if(m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+</script>
 </body>
 </html>
