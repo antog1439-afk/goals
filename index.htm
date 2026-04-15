@@ -138,30 +138,7 @@
             color: #4a5568;
         }
         
-        /* Шапка — без рамки */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-        }
-        
-        .header h1 {
-            font-size: 34px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 8px;
-        }
-        
-        .header p {
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 14px;
-        }
-        
-        /* Табы — без рамок */
+        /* Табы — без рамок, с отступом сверху */
         .tabs {
             display: flex;
             gap: 8px;
@@ -170,6 +147,7 @@
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 4px;
+            margin-top: 0;
         }
         
         .tab {
@@ -487,10 +465,7 @@
 </head>
 <body class="theme-default">
     <div class="container">
-        <div class="header">
-            <h1>🎯 Мой Планировщик</h1>
-            <p>Управляй событиями, ставь цели и никогда ничего не забывай</p>
-        </div>
+        <!-- Шапка полностью удалена -->
         
         <div class="tabs">
             <button class="tab active" onclick="showTab('events')">📅 События</button>
