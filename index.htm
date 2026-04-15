@@ -14,7 +14,6 @@
             transition: background 0.3s ease;
             position: relative;
             padding: 20px;
-            /* ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ ПО ЦЕНТРУ */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,7 +83,7 @@
             backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 15px;
-            width: 250px;
+            width: 280px;
             z-index: 100;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             transform: scale(0);
@@ -122,6 +121,45 @@
         
         .theme-option:hover { transform: scale(1.05); }
         .theme-option.selected { border-color: white; box-shadow: 0 0 0 2px #667eea; }
+        
+        /* Слайдеры для прозрачности и яркости */
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        
+        .slider-group input {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider-group input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .slider-value {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+        }
         
         .custom-theme-btn, .reset-theme-btn {
             width: 100%;
@@ -192,10 +230,10 @@
             transform: translateY(-1px);
         }
         
-        /* Карточки событий */
+        /* Карточки событий — с переменными прозрачности и яркости */
         .event-item, .note-item, .history-item {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, var(--card-opacity, 0.92));
+            backdrop-filter: blur(var(--card-blur, 10px));
             padding: 18px;
             border-radius: 24px;
             margin-bottom: 12px;
@@ -206,7 +244,7 @@
         
         .event-item:hover, .note-item:hover, .history-item:hover {
             transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.96);
+            background: rgba(255, 255, 255, calc(var(--card-opacity, 0.92) + 0.04));
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
         }
         
@@ -295,8 +333,8 @@
         .empty-state {
             text-align: center;
             padding: 50px 20px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, var(--card-opacity, 0.85));
+            backdrop-filter: blur(var(--card-blur, 10px));
             border-radius: 24px;
             color: #4a5568;
         }
@@ -511,8 +549,19 @@
             <div class="theme-option" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);" onclick="setTheme('berry')"></div>
             <div class="theme-option" style="background: linear-gradient(135deg, #1f1c2c 0%, #302b63 100%);" onclick="setTheme('night')"></div>
         </div>
+        
+        <div class="slider-group">
+            <label>🔮 Прозрачность карточек <span id="opacityValue" class="slider-value">92%</span></label>
+            <input type="range" id="opacitySlider" min="0.3" max="1" step="0.01" value="0.92">
+        </div>
+        
+        <div class="slider-group">
+            <label>✨ Размытие фона <span id="blurValue" class="slider-value">10px</span></label>
+            <input type="range" id="blurSlider" min="0" max="20" step="1" value="10">
+        </div>
+        
         <button class="custom-theme-btn" onclick="uploadCustomBackground()">📸 Своё фото</button>
-        <button class="reset-theme-btn" onclick="resetToDefault()">🔄 Сбросить</button>
+        <button class="reset-theme-btn" onclick="resetToDefault()">🔄 Сбросить всё</button>
     </div>
     
     <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
@@ -579,7 +628,35 @@
         const REMINDERS_KEY = `reminders_${userId}`;
         const THEME_KEY = `theme_${userId}`;
         const CUSTOM_BG_KEY = `custom_bg_${userId}`;
+        const OPACITY_KEY = `card_opacity_${userId}`;
+        const BLUR_KEY = `card_blur_${userId}`;
         
+        // --- Функции для прозрачности и яркости ---
+        function updateCardStyle() {
+            const opacity = document.getElementById('opacitySlider').value;
+            const blur = document.getElementById('blurSlider').value;
+            document.documentElement.style.setProperty('--card-opacity', opacity);
+            document.documentElement.style.setProperty('--card-blur', blur + 'px');
+            document.getElementById('opacityValue').innerText = Math.round(opacity * 100) + '%';
+            document.getElementById('blurValue').innerText = blur + 'px';
+            localStorage.setItem(OPACITY_KEY, opacity);
+            localStorage.setItem(BLUR_KEY, blur);
+        }
+        
+        function loadSavedCardStyle() {
+            const savedOpacity = localStorage.getItem(OPACITY_KEY);
+            const savedBlur = localStorage.getItem(BLUR_KEY);
+            const opacity = savedOpacity !== null ? parseFloat(savedOpacity) : 0.92;
+            const blur = savedBlur !== null ? parseInt(savedBlur) : 10;
+            document.getElementById('opacitySlider').value = opacity;
+            document.getElementById('blurSlider').value = blur;
+            document.documentElement.style.setProperty('--card-opacity', opacity);
+            document.documentElement.style.setProperty('--card-blur', blur + 'px');
+            document.getElementById('opacityValue').innerText = Math.round(opacity * 100) + '%';
+            document.getElementById('blurValue').innerText = blur + 'px';
+        }
+        
+        // --- Функции для работы с фоном ---
         function toggleThemePanel() {
             const panel = document.getElementById('themePanel');
             panel.classList.toggle('show');
@@ -591,9 +668,6 @@
             body.classList.add(`theme-${themeName}`);
             localStorage.setItem(THEME_KEY, themeName);
             showMessage('🎨 Тема изменена!');
-            setTimeout(() => {
-                document.getElementById('themePanel').classList.remove('show');
-            }, 500);
         }
         
         function uploadCustomBackground() {
@@ -616,7 +690,6 @@
                     localStorage.setItem(THEME_KEY, 'custom');
                     localStorage.setItem(CUSTOM_BG_KEY, imageUrl);
                     showMessage('📸 Фото установлено как фон!');
-                    document.getElementById('themePanel').classList.remove('show');
                 };
                 reader.readAsDataURL(file);
             }
@@ -629,7 +702,11 @@
             body.style.backgroundImage = '';
             localStorage.setItem(THEME_KEY, 'default');
             localStorage.removeItem(CUSTOM_BG_KEY);
-            showMessage('🔄 Фон сброшен к стандартному');
+            // Сброс прозрачности и яркости
+            document.getElementById('opacitySlider').value = 0.92;
+            document.getElementById('blurSlider').value = 10;
+            updateCardStyle();
+            showMessage('🔄 Все настройки сброшены!');
             document.getElementById('themePanel').classList.remove('show');
         }
         
@@ -922,9 +999,15 @@
             if (!e.target.closest('.theme-panel') && !e.target.closest('.theme-btn')) document.getElementById('themePanel').classList.remove('show');
         };
         
+        // Инициализация
         loadSavedTheme();
+        loadSavedCardStyle();
         setInterval(checkAndSendReminders, 30000);
         loadEvents();
+        
+        // Слушатели для слайдеров
+        document.getElementById('opacitySlider').addEventListener('input', updateCardStyle);
+        document.getElementById('blurSlider').addEventListener('input', updateCardStyle);
     </script>
 </body>
 </html>
