@@ -38,7 +38,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             pointer-events: none;
             z-index: 0;
         }
@@ -51,7 +51,73 @@
             z-index: 1;
         }
         
-        /* Кнопка настроек фона */
+        /* Панель управления стилями */
+        .style-panel {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .style-title {
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .style-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .style-control {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .style-control label {
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 11px;
+            margin-bottom: 5px;
+            font-weight: 500;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        
+        .style-control input {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .style-control input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        
+        .style-value {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: right;
+            margin-top: 3px;
+        }
+        
+        /* Кнопка выбора фона */
         .theme-btn {
             position: fixed;
             bottom: 20px;
@@ -59,7 +125,7 @@
             width: 50px;
             height: 50px;
             border-radius: 25px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             border: none;
@@ -70,6 +136,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            color: white;
         }
         
         .theme-btn:hover { transform: scale(1.1); }
@@ -79,17 +146,18 @@
             position: fixed;
             bottom: 80px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(15px);
             border-radius: 20px;
             padding: 15px;
             width: 280px;
             z-index: 100;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
             transform: scale(0);
             opacity: 0;
             transition: all 0.3s ease;
             transform-origin: bottom right;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .theme-panel.show {
@@ -99,7 +167,7 @@
         
         .theme-panel h4 {
             margin-bottom: 10px;
-            color: #2d3748;
+            color: white;
             font-size: 14px;
         }
         
@@ -119,47 +187,7 @@
             transition: all 0.2s ease;
         }
         
-        .theme-option:hover { transform: scale(1.05); }
-        .theme-option.selected { border-color: white; box-shadow: 0 0 0 2px #667eea; }
-        
-        /* Слайдеры для прозрачности и яркости */
-        .slider-group {
-            margin-bottom: 15px;
-        }
-        
-        .slider-group label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #2d3748;
-            font-weight: 500;
-        }
-        
-        .slider-group input {
-            width: 100%;
-            height: 4px;
-            -webkit-appearance: none;
-            background: #e2e8f0;
-            border-radius: 5px;
-            outline: none;
-        }
-        
-        .slider-group input::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-        
-        .slider-value {
-            font-size: 12px;
-            color: #667eea;
-            font-weight: 600;
-        }
+        .theme-option:hover { transform: scale(1.05); border-color: white; }
         
         .custom-theme-btn, .reset-theme-btn {
             width: 100%;
@@ -177,16 +205,16 @@
         }
         
         .reset-theme-btn {
-            background: #e2e8f0;
-            color: #4a5568;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
         }
         
         /* Табы */
         .tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 24px;
-            background: rgba(255, 255, 255, 0.15);
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 4px;
@@ -203,6 +231,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
         
         .tab.active {
@@ -212,7 +241,7 @@
         
         /* Кнопка добавления */
         .add-btn {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(10px);
             border: none;
             border-radius: 30px;
@@ -223,14 +252,16 @@
             margin-bottom: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
+            width: 100%;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
         
         .add-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5);
             transform: translateY(-1px);
         }
         
-        /* Карточки событий — с переменными прозрачности и яркости */
+        /* Карточки событий — с улучшенной читаемостью текста */
         .event-item, .note-item, .history-item {
             background: rgba(255, 255, 255, var(--card-opacity, 0.92));
             backdrop-filter: blur(var(--card-blur, 10px));
@@ -239,13 +270,13 @@
             margin-bottom: 12px;
             transition: all 0.3s ease;
             border: none;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
         
         .event-item:hover, .note-item:hover, .history-item:hover {
             transform: translateY(-2px);
-            background: rgba(255, 255, 255, calc(var(--card-opacity, 0.92) + 0.04));
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            background: rgba(255, 255, 255, min(calc(var(--card-opacity, 0.92) + 0.05), 1));
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
         }
         
         .event-header, .note-header, .history-header {
@@ -255,79 +286,55 @@
             margin-bottom: 10px;
         }
         
+        /* Улучшенная читаемость текста на карточках */
         .event-name, .note-title, .history-name {
-            font-weight: 700;
+            font-weight: 800;
             font-size: 18px;
             color: #1a202c;
             flex: 1;
-        }
-        
-        .event-actions, .note-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .edit-btn, .delete-event-btn, .delete-note-btn {
-            padding: 6px 14px;
-            width: auto;
-            font-size: 13px;
-            border-radius: 20px;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .edit-btn {
-            background: rgba(72, 187, 120, 0.9);
-            color: white;
-        }
-        
-        .delete-event-btn, .delete-note-btn {
-            background: rgba(245, 101, 101, 0.9);
-            color: white;
-        }
-        
-        .edit-btn:hover, .delete-event-btn:hover, .delete-note-btn:hover {
-            transform: scale(0.98);
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
         }
         
         .event-datetime, .history-datetime {
             font-size: 14px;
-            color: #4a5568;
+            color: #2d3748;
             margin-bottom: 8px;
+            font-weight: 500;
         }
         
         .event-days, .history-status {
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
         }
         
         .event-days {
             color: #2b6cb0;
         }
         
+        .note-content {
+            font-size: 14px;
+            color: #2d3748;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        
+        .note-date {
+            font-size: 12px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
         .reminder-badge {
             display: inline-block;
-            background: rgba(237, 137, 54, 0.9);
+            background: rgba(237, 137, 54, 0.95);
             color: white;
             font-size: 10px;
             padding: 3px 10px;
             border-radius: 20px;
             margin-left: 8px;
-            font-weight: 500;
-        }
-        
-        .note-content {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-        
-        .note-date {
-            font-size: 12px;
-            color: #718096;
+            font-weight: 600;
+            text-shadow: none;
         }
         
         .empty-state {
@@ -336,7 +343,8 @@
             background: rgba(255, 255, 255, var(--card-opacity, 0.85));
             backdrop-filter: blur(var(--card-blur, 10px));
             border-radius: 24px;
-            color: #4a5568;
+            color: #2d3748;
+            font-weight: 500;
         }
         
         /* Модальные окна */
@@ -347,7 +355,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
@@ -363,7 +371,7 @@
             width: 100%;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
         .modal-content h3 {
@@ -443,21 +451,22 @@
             flex: 1;
             padding: 10px;
             font-size: 14px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(5px);
             color: white;
             border: none;
             border-radius: 30px;
             cursor: pointer;
             transition: all 0.2s ease;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
         
         .filter-btn.active {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
         }
         
         .stats {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(10px);
             padding: 16px;
             border-radius: 24px;
@@ -465,6 +474,7 @@
             text-align: center;
             color: white;
             font-weight: 500;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
         
         .stats span {
@@ -473,7 +483,7 @@
         }
         
         .back-btn {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(5px);
             color: white;
             border: none;
@@ -481,6 +491,8 @@
             padding: 12px;
             margin-bottom: 15px;
             font-size: 14px;
+            width: 100%;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
         
         .success-msg {
@@ -488,7 +500,7 @@
             bottom: 20px;
             left: 20px;
             right: 20px;
-            background: rgba(72, 187, 120, 0.95);
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             color: white;
             padding: 14px;
@@ -502,10 +514,31 @@
         }
         
         #imageUpload { display: none; }
+        
+        /* Дополнительная тень для текста при высокой прозрачности */
+        .low-opacity-text {
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body class="theme-default">
     <div class="container">
+        
+        <!-- Панель управления прозрачностью и размытием -->
+        <div class="style-panel">
+            <div class="style-title">🎨 Настройки внешнего вида</div>
+            <div class="style-controls">
+                <div class="style-control">
+                    <label>🔮 Прозрачность <span id="opacityValue" class="style-value">92%</span></label>
+                    <input type="range" id="opacitySlider" min="0.3" max="1" step="0.01" value="0.92">
+                </div>
+                <div class="style-control">
+                    <label>✨ Размытие <span id="blurValue" class="style-value">10px</span></label>
+                    <input type="range" id="blurSlider" min="0" max="20" step="1" value="10">
+                </div>
+            </div>
+        </div>
+        
         <div class="tabs">
             <button class="tab active" onclick="showTab('events')">📅 События</button>
             <button class="tab" onclick="showTab('history')">📜 История</button>
@@ -535,12 +568,12 @@
         </div>
     </div>
     
-    <!-- Кнопка выбора фона -->
+    <!-- Кнопка выбора фона (цветные темы и фото) -->
     <button class="theme-btn" onclick="toggleThemePanel()">🎨</button>
     
     <!-- Панель выбора темы -->
     <div class="theme-panel" id="themePanel">
-        <h4>🎨 Выбери фон</h4>
+        <h4>🎨 Цветные темы</h4>
         <div class="theme-grid">
             <div class="theme-option" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="setTheme('default')"></div>
             <div class="theme-option" style="background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);" onclick="setTheme('ocean')"></div>
@@ -549,17 +582,6 @@
             <div class="theme-option" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%);" onclick="setTheme('berry')"></div>
             <div class="theme-option" style="background: linear-gradient(135deg, #1f1c2c 0%, #302b63 100%);" onclick="setTheme('night')"></div>
         </div>
-        
-        <div class="slider-group">
-            <label>🔮 Прозрачность карточек <span id="opacityValue" class="slider-value">92%</span></label>
-            <input type="range" id="opacitySlider" min="0.3" max="1" step="0.01" value="0.92">
-        </div>
-        
-        <div class="slider-group">
-            <label>✨ Размытие фона <span id="blurValue" class="slider-value">10px</span></label>
-            <input type="range" id="blurSlider" min="0" max="20" step="1" value="10">
-        </div>
-        
         <button class="custom-theme-btn" onclick="uploadCustomBackground()">📸 Своё фото</button>
         <button class="reset-theme-btn" onclick="resetToDefault()">🔄 Сбросить всё</button>
     </div>
@@ -617,10 +639,12 @@
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.MainButton.hide();
+        if (tg) {
+            tg.expand();
+            tg.MainButton.hide();
+        }
         
-        let userId = tg.initDataUnsafe?.user?.id || 'anonymous';
+        let userId = tg?.initDataUnsafe?.user?.id || 'anonymous_' + Math.random();
         let currentHistoryFilter = 'all';
         
         const EVENTS_KEY = `events_${userId}`;
@@ -631,7 +655,7 @@
         const OPACITY_KEY = `card_opacity_${userId}`;
         const BLUR_KEY = `card_blur_${userId}`;
         
-        // --- Функции для прозрачности и яркости ---
+        // --- Функции для прозрачности и размытия ---
         function updateCardStyle() {
             const opacity = document.getElementById('opacitySlider').value;
             const blur = document.getElementById('blurSlider').value;
@@ -641,6 +665,14 @@
             document.getElementById('blurValue').innerText = blur + 'px';
             localStorage.setItem(OPACITY_KEY, opacity);
             localStorage.setItem(BLUR_KEY, blur);
+            
+            // Добавляем класс для усиления тени текста при высокой прозрачности
+            const cards = document.querySelectorAll('.event-item, .note-item, .history-item, .empty-state');
+            if (opacity < 0.6) {
+                cards.forEach(card => card.classList.add('low-opacity-text'));
+            } else {
+                cards.forEach(card => card.classList.remove('low-opacity-text'));
+            }
         }
         
         function loadSavedCardStyle() {
@@ -668,6 +700,7 @@
             body.classList.add(`theme-${themeName}`);
             localStorage.setItem(THEME_KEY, themeName);
             showMessage('🎨 Тема изменена!');
+            document.getElementById('themePanel').classList.remove('show');
         }
         
         function uploadCustomBackground() {
@@ -690,6 +723,7 @@
                     localStorage.setItem(THEME_KEY, 'custom');
                     localStorage.setItem(CUSTOM_BG_KEY, imageUrl);
                     showMessage('📸 Фото установлено как фон!');
+                    document.getElementById('themePanel').classList.remove('show');
                 };
                 reader.readAsDataURL(file);
             }
@@ -702,7 +736,7 @@
             body.style.backgroundImage = '';
             localStorage.setItem(THEME_KEY, 'default');
             localStorage.removeItem(CUSTOM_BG_KEY);
-            // Сброс прозрачности и яркости
+            // Сброс прозрачности и размытия
             document.getElementById('opacitySlider').value = 0.92;
             document.getElementById('blurSlider').value = 10;
             updateCardStyle();
@@ -721,7 +755,9 @@
                 body.style.backgroundPosition = 'center';
                 body.style.backgroundAttachment = 'fixed';
             } else if (savedTheme && savedTheme !== 'custom') {
-                setTheme(savedTheme);
+                const body = document.body;
+                body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest', 'theme-berry', 'theme-night', 'theme-custom');
+                body.classList.add(`theme-${savedTheme}`);
             } else {
                 setTheme('default');
             }
@@ -730,7 +766,7 @@
         function showMessage(text, isError = false) {
             const msg = document.getElementById('successMsg');
             msg.textContent = text;
-            msg.style.background = isError ? 'rgba(245, 101, 101, 0.95)' : 'rgba(72, 187, 120, 0.95)';
+            msg.style.background = isError ? 'rgba(220, 53, 69, 0.9)' : 'rgba(40, 167, 69, 0.9)';
             msg.style.opacity = '1';
             setTimeout(() => {
                 msg.style.opacity = '0';
@@ -751,6 +787,7 @@
         }
         
         function checkAndSendReminders() {
+            if (!tg) return;
             Telegram.WebApp.CloudStorage.getItems([EVENTS_KEY, REMINDERS_KEY], (err, items) => {
                 if (err) return;
                 let events = [];
