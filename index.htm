@@ -14,6 +14,10 @@
             transition: background 0.3s ease;
             position: relative;
             padding: 20px;
+            /* ВЕРТИКАЛЬНОЕ ВЫРАВНИВАНИЕ ПО ЦЕНТРУ */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         /* Градиентные темы */
@@ -42,6 +46,7 @@
         
         .container {
             max-width: 600px;
+            width: 100%;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -138,7 +143,7 @@
             color: #4a5568;
         }
         
-        /* Табы — без рамок, с отступом сверху */
+        /* Табы */
         .tabs {
             display: flex;
             gap: 8px;
@@ -147,7 +152,6 @@
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 4px;
-            margin-top: 0;
         }
         
         .tab {
@@ -188,7 +192,7 @@
             transform: translateY(-1px);
         }
         
-        /* Карточки событий — БЕЗ РАМОК, только тень */
+        /* Карточки событий */
         .event-item, .note-item, .history-item {
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(10px);
@@ -206,7 +210,6 @@
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
         }
         
-        /* Внутренние элементы карточек */
         .event-header, .note-header, .history-header {
             display: flex;
             justify-content: space-between;
@@ -465,8 +468,6 @@
 </head>
 <body class="theme-default">
     <div class="container">
-        <!-- Шапка полностью удалена -->
-        
         <div class="tabs">
             <button class="tab active" onclick="showTab('events')">📅 События</button>
             <button class="tab" onclick="showTab('history')">📜 История</button>
@@ -579,7 +580,6 @@
         const THEME_KEY = `theme_${userId}`;
         const CUSTOM_BG_KEY = `custom_bg_${userId}`;
         
-        // --- Функции для работы с фоном ---
         function toggleThemePanel() {
             const panel = document.getElementById('themePanel');
             panel.classList.toggle('show');
